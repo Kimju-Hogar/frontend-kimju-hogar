@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Orbitron:wght@400;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white text-secondary font-sans antialiased overflow-x-hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display tracking-wider;
+  }
+}
+
+@layer utilities {
+  .border-neo {
+    @apply border-2 border-black;
+  }
+
+  .shadow-neo {
+    box-shadow: 6px 6px 0px 0px #000000;
+  }
+
+  .shadow-neo-hover {
+    @apply transition-all duration-200;
+  }
+
+  .shadow-neo-hover:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 4px 4px 0px 0px #000000;
+  }
+
+  .shadow-neo-active:active {
+    transform: translate(6px, 6px);
+    box-shadow: 0px 0px 0px 0px #000000;
+  }
+
+  /* Specific Button Style from User Request */
+  .btn-neo-primary {
+    @apply bg-white text-black border-2 border-black font-bold uppercase tracking-widest px-8 py-4 relative;
+    box-shadow: 8px 8px 0px 0px #000000;
+    transition: all 0.2s ease;
+  }
+
+  .btn-neo-primary:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 6px 6px 0px 0px #000000;
+    @apply bg-primary;
+  }
+
+  .btn-neo-primary:active {
+    transform: translate(8px, 8px);
+    box-shadow: 0px 0px 0px 0px #000000;
+  }
+}
