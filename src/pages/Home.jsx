@@ -34,7 +34,7 @@ const Home = () => {
                 {/* Hero Section */}
                 <section className="relative h-[85vh] bg-black text-white overflow-hidden flex items-center justify-center">
                     <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center opacity-40"></div>
-                    <div className="relative z-10 text-center px-4 max-w-5xl mx-auto space-y-4">
+                    <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
