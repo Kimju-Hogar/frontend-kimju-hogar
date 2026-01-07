@@ -28,7 +28,7 @@ const About = () => {
                             <h2 className="text-4xl font-display font-bold uppercase">Más que muebles,<br />una experiencia.</h2>
                             <p className="text-gray-600 text-lg leading-relaxed">
                                 Kimju Hogar nació de la necesidad de escapar de lo convencional. Creemos que tu espacio debe reflejar no solo quién eres, sino quién quieres ser.
-                                Nuestras colecciones son curadas meticulosamente bajo estándares de diseño "Neo-Brutalista" y minimalista, priorizando formas audaces y funcionalidad absoluta.
+                                Nuestras colecciones productos para el hogar y uso personal del dia a dia con un estilo minimalista, priorizando formas audaces y funcionalidad absoluta.
                             </p>
                             <div className="grid grid-cols-2 gap-8 pt-8">
                                 <div>

@@ -19,6 +19,7 @@ import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import WhatsAppButton from './components/common/WhatsAppButton';
 import PageTransition from './components/layout/PageTransition';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -38,14 +39,16 @@ function App() {
                                     <Route path="/shop" element={<Shop />} />
                                     <Route path="/product/:id" element={<ProductDetail />} />
                                     <Route path="/login" element={<Login />} />
-                                    <Route path="/profile" element={<UserProfile />} />
-                                    <Route path="/cart" element={<Cart />} />
-                                    {/* Checkout will be protected or check if empty cart */}
-                                    <Route path="/checkout" element={<Checkout />} />
                                     <Route path="/register" element={<Register />} />
                                     <Route path="/about" element={<About />} />
                                     <Route path="/contact" element={<Contact />} />
-                                    <Route path="/admin" element={<AdminDashboard />} />
+
+                                    {/* Protected Routes */}
+                                    <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+                                    <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+                                    <Route path="/cart" element={<Cart />} />
+                                    <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+
                                     <Route path="*" element={<div className="p-20 text-center">Página no encontrada</div>} />
                                 </Routes>
                             </PageTransition>

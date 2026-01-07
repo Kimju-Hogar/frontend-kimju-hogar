@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, MessageCircle } from 'lucide-react';
+import logo from '../../assets/kimju-hogar-logo.jpg';
 
 const Footer = () => {
     return (
@@ -9,10 +10,13 @@ const Footer = () => {
 
                     {/* Brand */}
                     <div className="col-span-1 md:col-span-1 space-y-6">
-                        <h3 className="text-3xl font-display font-black uppercase tracking-tighter">
-                            Kimju <span className="text-primary">Hogar</span>
-                        </h3>
-                        <p className="text-gray-500 text-sm leading-relaxed max-w-xs">
+                        <Link to="/" className="flex items-center space-x-3 group">
+                            <img src={logo} alt="Kimju Hogar" className="h-12 w-12 object-cover rounded-lg border border-white/20 transition-transform group-hover:scale-110" />
+                            <h3 className="text-3xl font-display font-black uppercase tracking-tighter text-white group-hover:text-primary transition-colors">
+                                Kimju <span className="text-primary group-hover:text-white transition-colors">Hogar</span>
+                            </h3>
+                        </Link>
+                        <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
                             Accesorios para el hogar y uso personal. Elegancia y estilo en cada detalle.
                         </p>
                     </div>
@@ -21,11 +25,10 @@ const Footer = () => {
                     <div>
                         <h4 className="font-bold text-sm uppercase tracking-widest mb-6 text-white">Enlaces</h4>
                         <ul className="space-y-4 text-sm text-gray-500">
-                            <li><Link to="/cart" className="hover:text-primary transition-colors">Carrito</Link></li>
-                            <li><Link to="/checkout" className="hover:text-primary transition-colors">Finalizar compra</Link></li>
-                            <li><Link to="/login" className="hover:text-primary transition-colors">Mi cuenta</Link></li>
-                            <li><Link to="/privacy" className="hover:text-primary transition-colors">Sample Page</Link></li>
                             <li><Link to="/shop" className="hover:text-primary transition-colors">Tienda</Link></li>
+                            <li><Link to="/contact" className="hover:text-primary transition-colors">Contacto</Link></li>
+                            <li><Link to="/profile" className="hover:text-primary transition-colors">Mi cuenta</Link></li>
+                            <li><Link to="/about" className="hover:text-primary transition-colors">Nosotros</Link></li>
                         </ul>
                     </div>
 

@@ -4,9 +4,37 @@ import axios from 'axios';
 import { ArrowRight, Star, Zap, Shield, Truck, Smartphone, Coffee, Monitor, ShoppingCart, Rocket } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PageTransition from '../components/layout/PageTransition';
+import bannerHome from '../assets/banner/home.jpg';
 
 const Home = () => {
     const [products, setProducts] = useState([]);
+
+    const [textIndex, setTextIndex] = useState(0);
+    const [displayText, setDisplayText] = useState('');
+    const [isDeleting, setIsDeleting] = useState(false);
+    const phrases = ["Hogar & Estilo", "Espacios Únicos", "Esencia Personal", "Diseño Exclusivo"];
+    const typingSpeed = isDeleting ? 50 : 150;
+
+    useEffect(() => {
+        const handleTyping = () => {
+            const currentPhrase = phrases[textIndex];
+            if (!isDeleting) {
+                setDisplayText(currentPhrase.substring(0, displayText.length + 1));
+                if (displayText === currentPhrase) {
+                    setTimeout(() => setIsDeleting(true), 1500);
+                }
+            } else {
+                setDisplayText(currentPhrase.substring(0, displayText.length - 1));
+                if (displayText === '') {
+                    setIsDeleting(false);
+                    setTextIndex((prev) => (prev + 1) % phrases.length);
+                }
+            }
+        };
+
+        const timer = setTimeout(handleTyping, typingSpeed);
+        return () => clearTimeout(timer);
+    }, [displayText, isDeleting, textIndex]);
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -29,11 +57,14 @@ const Home = () => {
 
     return (
         <PageTransition>
-            <div className="bg-white min-h-screen pt-20">
+            <div className="bg-black min-h-screen pt-20">
 
                 {/* Hero Section */}
                 <section className="relative h-[85vh] bg-black text-white overflow-hidden flex items-center justify-center">
-                    <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center opacity-40"></div>
+                    <div
+                        className="absolute inset-0 bg-cover bg-center opacity-40 transition-opacity duration-1000"
+                        style={{ backgroundImage: `url(${bannerHome})` }}
+                    ></div>
                     <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
@@ -41,25 +72,30 @@ const Home = () => {
                             transition={{ duration: 0.5 }}
                             className="inline-block border border-white/30 bg-white/10 backdrop-blur-md px-4 py-1 rounded-full mb-4"
                         >
-                            <span className="text-sm font-bold tracking-widest uppercase text-primary">Nueva Colección 2026</span>
+                            <span className="text-sm font-bold tracking-widest uppercase text-primary">DECORACIÓN | PROMOCIONES | HOGAR | TERMOS</span>
                         </motion.div>
 
                         <motion.h1
                             initial={{ y: 50, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ duration: 0.8 }}
-                            className="text-6xl md:text-9xl font-display font-black uppercase tracking-tighter leading-none"
+                            className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-black uppercase tracking-tighter leading-none flex flex-col items-center justify-center"
                         >
-                            Futuro <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500 stroke-text-white">Estético</span>
+                            <div className="h-[1.2em] flex items-center justify-center w-full overflow-visible">
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500 stroke-text-white relative inline-block whitespace-nowrap">
+                                    {displayText}
+                                    <span className="absolute -right-2 md:-right-4 top-0 w-1 h-[90%] bg-primary animate-pulse inline-block ml-1"></span>
+                                </span>
+                            </div>
                         </motion.h1>
 
                         <motion.p
                             initial={{ y: 30, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.2, duration: 0.8 }}
-                            className="text-xl md:text-3xl font-light text-gray-200 max-w-3xl mx-auto leading-relaxed"
+                            className="text-lg md:text-2xl font-light text-gray-300 max-w-3xl mx-auto leading-relaxed mt-6"
                         >
-                            Redefiniendo tu espacio con productos que fusionan diseño vanguardista y funcionalidad extrema.
+                            Vendemos todo lo que tu hogar necesita
                         </motion.p>
 
                         <motion.div
@@ -151,9 +187,9 @@ const Home = () => {
                 </section>
 
                 {/* Categories Grid */}
-                <section className="py-24 px-4 md:px-12 bg-gray-50 border-b-2 border-black">
+                <section className="py-24 px-4 md:px-12 bg-black border-y-2 border-white/10">
                     <div className="max-w-[1600px] mx-auto">
-                        <h2 className="text-4xl md:text-5xl font-display font-black uppercase mb-16 flex items-center">
+                        <h2 className="text-4xl md:text-5xl font-display font-black uppercase mb-16 flex items-center text-white">
                             <Monitor className="mr-4 w-10 h-10 text-primary" /> Categorías Populares
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -161,14 +197,14 @@ const Home = () => {
                                 <motion.div
                                     key={idx}
                                     whileHover={{ y: -10 }}
-                                    className="bg-white border-2 border-black p-8 shadow-neo hover:shadow-none transition-all cursor-pointer group flex flex-col items-center text-center h-full justify-between"
+                                    className="bg-white/5 border-2 border-white/10 p-8 shadow-[8px_8px_0px_0px_rgba(255,255,255,0.05)] hover:shadow-none hover:border-primary transition-all cursor-pointer group flex flex-col items-center text-center h-full justify-between"
                                 >
-                                    <div className="bg-gray-100 rounded-full p-6 mb-6 group-hover:bg-primary transition-colors border-2 border-black">
-                                        <cat.icon className="w-12 h-12 text-black" />
+                                    <div className="bg-white/10 rounded-full p-6 mb-6 group-hover:bg-primary transition-colors border-2 border-white/20">
+                                        <cat.icon className="w-12 h-12 text-white group-hover:text-black" />
                                     </div>
                                     <div>
-                                        <h3 className="text-2xl font-black uppercase mb-2">{cat.name}</h3>
-                                        <Link to={`/shop?category=${cat.name}`} className="inline-block mt-2 text-gray-500 font-bold text-sm border-b-2 border-transparent group-hover:border-black group-hover:text-black transition-all">
+                                        <h3 className="text-2xl font-black uppercase mb-2 text-white">{cat.name}</h3>
+                                        <Link to={`/shop?category=${cat.name}`} className="inline-block mt-2 text-gray-400 font-bold text-sm border-b-2 border-transparent group-hover:border-primary group-hover:text-primary transition-all">
                                             Ver Productos &rarr;
                                         </Link>
                                     </div>
@@ -186,7 +222,7 @@ const Home = () => {
                                 Catálogo <span className="text-primary">Destacado</span>
                             </h2>
                             <p className="text-gray-500 font-medium text-lg">
-                                Una selección curada de nuestros productos más versátiles para tu hogar.
+                                Una selección de nuestros productos más versátiles para tu hogar.
                                 Encuentra desde tecnología hasta decoración esencial.
                             </p>
                         </div>
@@ -270,7 +306,7 @@ const Home = () => {
                                 <div className="border-2 border-black p-6 w-80 shrink-0 flex flex-col justify-center bg-white hover:bg-black hover:text-white transition-colors group">
                                     <Shield className="w-10 h-10 text-black group-hover:text-primary mb-4 transition-colors" />
                                     <h3 className="font-black uppercase text-xl mb-1 group-hover:text-white">Pago Seguro</h3>
-                                    <p className="text-gray-500 text-sm font-bold group-hover:text-gray-300">PayU Gateway</p>
+                                    <p className="text-gray-500 text-sm font-bold group-hover:text-gray-300">Mercado Pago</p>
                                 </div>
                                 <div className="border-2 border-black p-6 w-80 shrink-0 flex flex-col justify-center bg-white hover:bg-black hover:text-white transition-colors group">
                                     <Star className="w-10 h-10 text-black group-hover:text-primary mb-4 transition-colors" />

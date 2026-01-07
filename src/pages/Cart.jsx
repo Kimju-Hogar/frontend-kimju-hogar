@@ -2,12 +2,9 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
 import PageTransition from '../components/layout/PageTransition';
-
 const Cart = () => {
     const { cart, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
-
     const total = getCartTotal();
-
     if (cart.length === 0) {
         return (
             <PageTransition>
@@ -21,13 +18,11 @@ const Cart = () => {
             </PageTransition>
         );
     }
-
     return (
         <PageTransition>
             <div className="bg-gray-50 min-h-screen pt-24 pb-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <h1 className="text-4xl md:text-5xl font-display font-black uppercase mb-12">Carrito de Compras</h1>
-
                     <div className="flex flex-col lg:flex-row gap-12">
                         {/* Cart Items */}
                         <div className="flex-1 space-y-6">
@@ -46,7 +41,6 @@ const Cart = () => {
                                         {item.selectedVariation && (
                                             <p className="text-xs font-bold text-gray-500 uppercase mb-4">Variante: {item.selectedVariation}</p>
                                         )}
-
                                         <div className="flex items-center justify-center sm:justify-between gap-4">
                                             <div className="flex items-center border border-black bg-white">
                                                 <button onClick={() => updateQuantity(item._id, item.selectedVariation, -1)} className="p-2 hover:bg-gray-100"><Minus className="w-3 h-3" /></button>
@@ -69,7 +63,6 @@ const Cart = () => {
                                 Vaciar Carrito
                             </button>
                         </div>
-
                         {/* Summary */}
                         <div className="lg:w-96 flex-shrink-0">
                             <div className="bg-white border-2 border-black p-8 sticky top-32 shadow-neo">
@@ -89,7 +82,6 @@ const Cart = () => {
                                         <span>${total.toLocaleString()}</span>
                                     </div>
                                 </div>
-
                                 <Link to="/checkout" className="btn-neo-primary w-full py-4 text-center block uppercase font-black tracking-widest hover:bg-white hover:text-black border-2 border-transparent hover:border-black transition-all">
                                     Proceder al Pago
                                 </Link>
@@ -108,5 +100,4 @@ const Cart = () => {
         </PageTransition>
     );
 };
-
 export default Cart;

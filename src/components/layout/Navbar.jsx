@@ -1,13 +1,14 @@
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, User, Search, Menu, X, Zap } from 'lucide-react';
+import { ShoppingCart, User, Search, Menu, X, Zap, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import logo from '../../assets/kimju-hogar-logo.jpg';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const { user, isAuthenticated } = useAuth();
+    const { logout, user, isAuthenticated } = useAuth();
     const { getCartCount } = useCart();
     const location = useLocation();
 
@@ -23,17 +24,15 @@ const Navbar = () => {
             <motion.nav
                 initial={{ y: -100 }}
                 animate={{ y: 0 }}
-                className="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-xl border-b border-gray-100/50"
+                className="fixed top-0 w-full z-50 bg-white backdrop-blur-xl border-b border-gray-100/50"
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-24">
 
                         {/* Logo */}
-                        <Link to="/" className="flex items-center space-x-2 group">
-                            <div className="bg-black text-white p-2 rounded-lg group-hover:bg-primary transition-colors duration-300">
-                                <Zap className="w-6 h-6 fill-current" />
-                            </div>
-                            <span className="text-2xl font-display font-black tracking-tighter uppercase">
+                        <Link to="/" className="flex items-center space-x-3 group">
+                            <img src={logo} alt="Kimju Hogar" className="h-10 w-10 object-cover rounded-3xl border border-white/20 transition-transform group-hover:scale-125" />
+                            <span className="text-2xl font-display font-black tracking-tighter uppercase text-black group-hover:text-primary transition-colors">
                                 Kimju <span className="text-primary group-hover:text-black transition-colors">Hogar</span>
                             </span>
                         </Link>
@@ -72,15 +71,24 @@ const Navbar = () => {
                             </div>
 
                             {user ? (
-                                <Link to={user.role === 'admin' ? "/admin" : "/profile"} className="relative group">
-                                    <div className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center font-bold font-display border-2 border-transparent group-hover:border-primary group-hover:bg-white group-hover:text-black transition-all">
-                                        {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                                    </div>
-                                    <span className="absolute top-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
-                                </Link>
+                                <div className="flex items-center space-x-4">
+                                    <Link to={user.role === 'admin' ? "/admin" : "/profile"} className="relative group">
+                                        <div className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center font-bold font-display border-2 border-transparent group-hover:border-primary group-hover:bg-white group-hover:text-black transition-all">
+                                            {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                                        </div>
+                                        <span className="absolute top-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                                    </Link>
+                                    <button
+                                        onClick={() => { logout(); window.location.href = '/'; }}
+                                        className="hidden lg:block text-gray-500 hover:text-red-500 transition-colors"
+                                        title="Cerrar Sesión"
+                                    >
+                                        <LogOut className="w-5 h-5" />
+                                    </button>
+                                </div>
                             ) : (
                                 <Link to="/login" className="font-bold text-sm uppercase tracking-wide hover:text-gray-500 transition-colors">
-                                    Login
+                                    Iniciar sesión
                                 </Link>
                             )}
 
@@ -122,9 +130,31 @@ const Navbar = () => {
                                     {link.name}
                                 </Link>
                             ))}
-                            <div className="flex justify-center space-x-8 mt-12 pt-12 border-t border-gray-100">
-                                <Link to="/login" onClick={() => setIsOpen(false)}><User className="w-8 h-8" /></Link>
-                                <Link to="/cart" onClick={() => setIsOpen(false)}><ShoppingCart className="w-8 h-8" /></Link>
+                            <div className="flex flex-col items-center space-y-4 mt-8 pt-8 border-t border-gray-100">
+                                {user ? (
+                                    <>
+                                        <Link to="/profile" onClick={() => setIsOpen(false)} className="flex items-center space-x-2 font-bold uppercase text-sm">
+                                            <User className="w-6 h-6" />
+                                            <span>Mi Perfil</span>
+                                        </Link>
+                                        <button
+                                            onClick={() => { logout(); setIsOpen(false); window.location.href = '/'; }}
+                                            className="flex items-center space-x-2 font-bold uppercase text-sm text-red-500"
+                                        >
+                                            <LogOut className="w-6 h-6" />
+                                            <span>Cerrar Sesión</span>
+                                        </button>
+                                    </>
+                                ) : (
+                                    <Link to="/login" onClick={() => setIsOpen(false)} className="flex items-center space-x-2 font-bold uppercase text-sm">
+                                        <User className="w-6 h-6" />
+                                        <span>Ingresar</span>
+                                    </Link>
+                                )}
+                                <Link to="/cart" onClick={() => setIsOpen(false)} className="flex items-center space-x-2 font-bold uppercase text-sm">
+                                    <ShoppingCart className="w-6 h-6" />
+                                    <span>Carrito ({getCartCount()})</span>
+                                </Link>
                             </div>
                         </div>
                     </motion.div>
