@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Orbitron:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Mochiy+Pop+One&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +6,15 @@
 
 @layer base {
   body {
-    @apply bg-black text-white font-sans antialiased overflow-x-hidden;
+    @apply bg-white text-secondary font-sans antialiased overflow-x-hidden;
+    background-image: radial-gradient(#F43F5E 1px, transparent 1px);
+    background-size: 32px 32px;
+    opacity: 1;
+  }
+
+  ::selection {
+    background-color: theme('colors.primary-light');
+    color: theme('colors.primary-dark');
   }
 
   h1,
@@ -15,48 +23,114 @@
   h4,
   h5,
   h6 {
-    @apply font-display tracking-wider;
+    @apply font-display text-secondary tracking-wide;
+  }
+}
+
+@layer components {
+
+  /* Elegant Card Style */
+  .card-kawaii {
+    @apply bg-[#F43F5E] rounded-[2rem] border border-pink-100 transition-all duration-500 overflow-hidden;
+    box-shadow: 0 8px 30px rgb(0, 0, 0, 0.04);
+  }
+
+  .card-kawaii:hover {
+    @apply transform -translate-y-2;
+    border-color: theme('colors.primary-light');
+    box-shadow: 0 20px 40px rgb(255, 228, 230, 0.6);
+  }
+
+  /* Elegant Button Style */
+  .btn-kawaii {
+    @apply text-white font-bold rounded-full px-8 py-3 transition-all duration-300 uppercase tracking-widest text-xs shadow-lg shadow-pink-200/50;
+    background-color: theme('colors.primary');
+  }
+
+  .btn-kawaii:hover {
+    @apply transform -translate-y-[2px] shadow-xl shadow-pink-300/60;
+    background-color: theme('colors.primary-dark');
+  }
+
+  .btn-kawaii:active {
+    @apply transform translate-y-[1px] shadow-sm;
+  }
+
+  .btn-kawaii-outline {
+    @apply bg-white text-primary border border-pink-200 font-bold rounded-full px-8 py-3 hover:text-white transition-all duration-300 uppercase tracking-widest text-xs;
+  }
+
+  .btn-kawaii-outline:hover {
+    @apply shadow-lg shadow-pink-200/50;
+    background-color: theme('colors.primary');
+    border-color: theme('colors.primary');
+  }
+
+  .btn-kawaii-secondary {
+    @apply bg-secondary text-white font-bold rounded-full px-8 py-3 transition-all duration-300 uppercase tracking-widest text-xs shadow-lg;
+  }
+
+  .btn-kawaii-secondary:hover {
+    @apply transform -translate-y-[2px] opacity-90;
+  }
+
+  .btn-kawaii-secondary:active {
+    @apply transform translate-y-[1px];
   }
 }
 
 @layer utilities {
-  .border-neo {
-    @apply border-2 border-black;
+  .text-shadow-pink {
+    text-shadow: 2px 2px 0px #FFB6C1;
   }
 
-  .shadow-neo {
-    box-shadow: 6px 6px 0px 0px #000000;
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 
-  .shadow-neo-hover {
-    @apply transition-all duration-200;
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
-  .shadow-neo-hover:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 4px 4px 0px 0px #000000;
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+
+    100% {
+      transform: translateY(0px);
+    }
   }
 
-  .shadow-neo-active:active {
-    transform: translate(6px, 6px);
-    box-shadow: 0px 0px 0px 0px #000000;
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
   }
 
-  /* Specific Button Style from User Request */
-  .btn-neo-primary {
-    @apply bg-white text-black border-2 border-black font-bold uppercase tracking-widest px-8 py-4 relative;
-    box-shadow: 8px 8px 0px 0px #000000;
-    transition: all 0.2s ease;
+  .animate-float-delayed {
+    animation: float 3s ease-in-out infinite;
+    animation-delay: 1.5s;
   }
 
-  .btn-neo-primary:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 6px 6px 0px 0px #000000;
-    @apply bg-primary;
+  @keyframes sparkle {
+
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+
+    50% {
+      transform: scale(1.2);
+      opacity: 1;
+    }
   }
 
-  .btn-neo-primary:active {
-    transform: translate(8px, 8px);
-    box-shadow: 0px 0px 0px 0px #000000;
+  .animate-kawaii-sparkle {
+    animation: sparkle 2s ease-in-out infinite;
   }
 }

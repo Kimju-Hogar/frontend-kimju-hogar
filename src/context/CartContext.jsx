@@ -1,11 +1,18 @@
-import { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext, useRef } from 'react';
+import axios from 'axios';
+import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
 
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
-    // Initialize cart from localStorage if available
+    const { isAuthenticated, user } = useAuth();
+    const isFirstRun = useRef(true);
+    const [isFetching, setIsFetching] = useState(false);
+    const [isCartOpen, setIsCartOpen] = useState(false);
+
+    // Initialize cart from localStorage ONLY if not authenticated yet
     const [cart, setCart] = useState(() => {
         try {
             const localCart = localStorage.getItem('cart');
@@ -16,24 +23,91 @@ export const CartProvider = ({ children }) => {
         }
     });
 
+    // 1. Sync from Backend on Login / Initial Load
+    useEffect(() => {
+        const fetchAndMergeCart = async () => {
+            if (isAuthenticated) {
+                setIsFetching(true);
+                try {
+                    const token = localStorage.getItem('token');
+                    const { data: remoteCart } = await axios.get('http://localhost:5000/api/users/cart', {
+                        headers: { 'x-auth-token': token }
+                    });
+
+                    // Logic: Merge local (guest) cart with remote cart
+                    setCart(prevCart => {
+                        const guestCart = prevCart;
+                        const formattedRemote = remoteCart.map(item => ({
+                            ...item.product,
+                            _id: item.product._id, // Ensure ID is flat
+                            quantity: item.quantity,
+                            selectedVariation: item.selectedVariation
+                        }));
+
+                        // Merge: Remote items take priority, but guest items are added if new
+                        const merged = [...formattedRemote];
+                        guestCart.forEach(guestItem => {
+                            const exists = merged.find(ri =>
+                                ri._id === guestItem._id && ri.selectedVariation === guestItem.selectedVariation
+                            );
+                            if (!exists) {
+                                merged.push(guestItem);
+                            }
+                        });
+
+                        return merged;
+                    });
+                } catch (error) {
+                    console.error("Error fetching remote cart", error);
+                } finally {
+                    setIsFetching(false);
+                    isFirstRun.current = false;
+                }
+            } else {
+                isFirstRun.current = false;
+            }
+        };
+        fetchAndMergeCart();
+    }, [isAuthenticated]);
+
+    // 2. Persist to Backend and LocalStorage on change
     useEffect(() => {
         localStorage.setItem('cart', JSON.stringify(cart));
-    }, [cart]);
+
+        const syncToBackend = async () => {
+            // Only sync if authenticated, not currently fetching, AND not the very first run
+            if (isAuthenticated && !isFetching && !isFirstRun.current) {
+                try {
+                    const token = localStorage.getItem('token');
+                    const cartData = cart.map(item => ({
+                        product: item._id,
+                        quantity: item.quantity,
+                        selectedVariation: item.selectedVariation
+                    }));
+                    await axios.post('http://localhost:5000/api/users/cart', cartData, {
+                        headers: { 'x-auth-token': token }
+                    });
+                } catch (error) {
+                    console.error("Error syncing cart to backend", error);
+                }
+            }
+        };
+
+        const timeoutId = setTimeout(syncToBackend, 1500); // 1.5s debounce to be safe
+        return () => clearTimeout(timeoutId);
+    }, [cart, isAuthenticated, isFetching]);
 
     const addToCart = (product, quantity = 1, variation = null) => {
         setCart(prevCart => {
-            // Check if item already exists with same ID and Variation
             const existingItemIndex = prevCart.findIndex(item =>
                 item._id === product._id && item.selectedVariation === variation
             );
 
             if (existingItemIndex > -1) {
-                // Update quantity
                 const newCart = [...prevCart];
                 newCart[existingItemIndex].quantity += quantity;
                 return newCart;
             } else {
-                // Add new item
                 return [...prevCart, {
                     ...product,
                     quantity,
@@ -53,7 +127,6 @@ export const CartProvider = ({ children }) => {
         setCart(prevCart => prevCart.map(item => {
             if (item._id === productId && item.selectedVariation === variation) {
                 const newQuantity = Math.max(1, item.quantity + delta);
-                // Optional: Check stock limit here if available in item data
                 return { ...item, quantity: newQuantity };
             }
             return item;
@@ -83,7 +156,9 @@ export const CartProvider = ({ children }) => {
             updateQuantity,
             clearCart,
             getCartTotal,
-            getCartCount
+            getCartCount,
+            isCartOpen,
+            setIsCartOpen
         }}>
             {children}
         </CartContext.Provider>
