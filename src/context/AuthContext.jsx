@@ -12,8 +12,11 @@ export const AuthProvider = ({ children }) => {
     // Configure axios defaults
     // Assuming backend is on port 5000, vite proxy might handle this or we set base URL
     // For now using relative path assuming proxy in vite.config or full url
+    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    console.log('AuthContext configured with API URL:', baseURL);
+
     const api = axios.create({
-        baseURL: 'http://localhost:5000/api', // TODO: Move to env
+        baseURL: baseURL,
     });
 
     useEffect(() => {
@@ -41,6 +44,7 @@ export const AuthProvider = ({ children }) => {
         const res = await api.post('/auth/login', { email, password });
         localStorage.setItem('token', res.data.token);
         api.defaults.headers.common['x-auth-token'] = res.data.token;
+        sessionStorage.setItem('just_logged_in', 'true');
         // Fetch profile immediately to update state
         // Or just decode token if it has info, but profile fetch is safer
         await checkUserLoggedIn();
@@ -51,6 +55,7 @@ export const AuthProvider = ({ children }) => {
         const res = await api.post('/auth/register', userData);
         localStorage.setItem('token', res.data.token);
         api.defaults.headers.common['x-auth-token'] = res.data.token;
+        sessionStorage.setItem('just_logged_in', 'true');
         await checkUserLoggedIn();
         return res.data;
     };
@@ -59,6 +64,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('token');
         delete api.defaults.headers.common['x-auth-token'];
         setUser(null);
+        window.dispatchEvent(new Event('auth:logout'));
     };
 
     return (

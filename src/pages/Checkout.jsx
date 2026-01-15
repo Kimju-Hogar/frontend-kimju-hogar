@@ -10,7 +10,8 @@ import colombiaData from '../utils/colombia.json';
 import { CreditCard, Truck, ShieldCheck, Heart, ShoppingBag, MapPin, Check, Sparkles, Star, Shield } from 'lucide-react';
 
 // Initialize MP with your public key
-initMercadoPago('TEST-5afed917-c538-47b2-9999-7acda2635a26', {
+const MP_KEY = import.meta.env.VITE_MERCADOPAGO_KEY || 'TEST-5afed917-c538-47b2-9999-7acda2635a26';
+initMercadoPago(MP_KEY, {
     locale: 'es-CO'
 });
 
@@ -41,7 +42,8 @@ const Checkout = () => {
         address: '',
         city: '',
         state: '',
-        phone: user?.phone || ''
+        phone: user?.phone || '',
+        additionalInfo: ''
     });
 
     const [selectedAddressIndex, setSelectedAddressIndex] = useState(null);
@@ -63,6 +65,7 @@ const Checkout = () => {
                 address: addr.street,
                 city: addr.city,
                 state: addr.state || '',
+                additionalInfo: addr.additionalInfo || ''
             });
             setSelectedAddressIndex(index);
         }
@@ -92,7 +95,8 @@ const Checkout = () => {
                     city: formData.city,
                     state: formData.state,
                     postalCode: '0000',
-                    country: 'Colombia'
+                    country: 'Colombia',
+                    additionalInfo: formData.additionalInfo
                 },
                 paymentMethod: 'Mercado Pago',
                 itemsPrice: getCartTotal(),
@@ -122,7 +126,13 @@ const Checkout = () => {
             }
         } catch (error) {
             console.error('Checkout error:', error);
-            alert('Hubo un error al procesar tu orden. Por favor intenta de nuevo.');
+            if (error.response && error.response.status === 400 && error.response.data.msg) {
+                alert(`Error: ${error.response.data.msg}`);
+                // Optional: Redirect to cart to fix the issue
+                // navigate('/cart');
+            } else {
+                alert('Hubo un error al procesar tu orden. Por favor intenta de nuevo.');
+            }
         } finally {
             setLoading(false);
         }
@@ -177,6 +187,7 @@ const Checkout = () => {
                                                     {selectedAddressIndex === idx && <Check className="w-4 h-4 text-primary" />}
                                                 </div>
                                                 <p className="text-[10px] text-gray-400 font-medium leading-tight truncate">{addr.street}</p>
+                                                {addr.additionalInfo && <p className="text-[10px] text-gray-300 font-medium leading-tight truncate">{addr.additionalInfo}</p>}
                                                 <p className="text-[10px] text-gray-400 font-medium leading-tight">{addr.city}</p>
                                             </div>
                                         </button>
@@ -223,6 +234,18 @@ const Checkout = () => {
                                     className="w-full bg-gray-50 border border-gray-200 p-4 rounded-2xl font-bold text-gray-600 outline-none focus:bg-white focus:border-primary transition-all placeholder:text-gray-300 shadow-sm disabled:opacity-50"
                                     placeholder="Calle 123 # 45-67"
                                     required
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="block text-xs font-bold text-gray-400 uppercase ml-3">Detalles Adicionales</label>
+                                <input
+                                    type="text"
+                                    name="additionalInfo"
+                                    value={formData.additionalInfo}
+                                    onChange={handleChange}
+                                    disabled={!!preferenceId}
+                                    className="w-full bg-gray-50 border border-gray-200 p-4 rounded-2xl font-bold text-gray-600 outline-none focus:bg-white focus:border-primary transition-all placeholder:text-gray-300 shadow-sm disabled:opacity-50"
+                                    placeholder="Apto, Torre, Conjunto, Referencia..."
                                 />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -283,7 +306,7 @@ const Checkout = () => {
                                             <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center mb-2 shadow-sm">
                                                 <Star className="w-5 h-5 text-purple-400" />
                                             </div>
-                                            <p className="text-[10px] font-black text-secondary uppercase mb-1">Compra Kawaii</p>
+                                            <p className="text-[10px] font-black text-secondary uppercase mb-1">Compra 100%</p>
                                             <p className="text-[8px] font-bold text-purple-400 tracking-widest uppercase">Garantizada</p>
                                         </div>
                                     </div>

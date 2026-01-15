@@ -25,38 +25,70 @@ export const CartProvider = ({ children }) => {
 
     // 1. Sync from Backend on Login / Initial Load
     useEffect(() => {
+        const handleLogout = () => {
+            setCart([]);
+            localStorage.removeItem('cart');
+        };
+
+        window.addEventListener('auth:logout', handleLogout);
+
         const fetchAndMergeCart = async () => {
             if (isAuthenticated) {
                 setIsFetching(true);
                 try {
                     const token = localStorage.getItem('token');
+                    // Use configured axios instance or base URL if possible, otherwise hardcoded for now
                     const { data: remoteCart } = await axios.get('http://localhost:5000/api/users/cart', {
                         headers: { 'x-auth-token': token }
                     });
 
-                    // Logic: Merge local (guest) cart with remote cart
-                    setCart(prevCart => {
-                        const guestCart = prevCart;
+                    // Logic: 
+                    // If 'just_logged_in' is true -> this is a fresh login, so we MERGE guest cart with remote cart.
+                    // If 'just_logged_in' is false -> this is a page reload, so we REPLACE local cart with remote cart (Source of Truth).
+
+                    const isFreshLogin = sessionStorage.getItem('just_logged_in') === 'true';
+
+                    if (isFreshLogin) {
+                        sessionStorage.removeItem('just_logged_in'); // Consume the flag
+
+                        setCart(prevCart => {
+                            const guestCart = prevCart;
+                            const formattedRemote = remoteCart.map(item => ({
+                                ...item.product,
+                                _id: item.product._id, // Ensure ID is flat
+                                quantity: item.quantity,
+                                selectedVariation: item.selectedVariation
+                            }));
+
+                            // Merge: Remote items take priority, but guest items are added if new OR quantities summed if existing
+                            const merged = [...formattedRemote];
+
+                            guestCart.forEach(guestItem => {
+                                const existingItemIndex = merged.findIndex(ri =>
+                                    ri._id === guestItem._id && ri.selectedVariation === guestItem.selectedVariation
+                                );
+
+                                if (existingItemIndex > -1) {
+                                    // Item exists in both - SUM quantities
+                                    merged[existingItemIndex].quantity += guestItem.quantity;
+                                } else {
+                                    // Item only in guest cart - Add it
+                                    merged.push(guestItem);
+                                }
+                            });
+
+                            return merged;
+                        });
+                    } else {
+                        // Just a reload - Trust Backend
                         const formattedRemote = remoteCart.map(item => ({
                             ...item.product,
-                            _id: item.product._id, // Ensure ID is flat
+                            _id: item.product._id,
                             quantity: item.quantity,
                             selectedVariation: item.selectedVariation
                         }));
-
-                        // Merge: Remote items take priority, but guest items are added if new
-                        const merged = [...formattedRemote];
-                        guestCart.forEach(guestItem => {
-                            const exists = merged.find(ri =>
-                                ri._id === guestItem._id && ri.selectedVariation === guestItem.selectedVariation
-                            );
-                            if (!exists) {
-                                merged.push(guestItem);
-                            }
-                        });
-
-                        return merged;
-                    });
+                        setCart(formattedRemote);
+                    }
                 } catch (error) {
                     console.error("Error fetching remote cart", error);
                 } finally {
@@ -68,6 +100,8 @@ export const CartProvider = ({ children }) => {
             }
         };
         fetchAndMergeCart();
+
+        return () => window.removeEventListener('auth:logout', handleLogout);
     }, [isAuthenticated]);
 
     // 2. Persist to Backend and LocalStorage on change
@@ -84,7 +118,7 @@ export const CartProvider = ({ children }) => {
                         quantity: item.quantity,
                         selectedVariation: item.selectedVariation
                     }));
-                    await axios.post('http://localhost:5000/api/users/cart', cartData, {
+                    await axios.post('http://localhost:5000/api/users/cart', { cart: cartData }, {
                         headers: { 'x-auth-token': token }
                     });
                 } catch (error) {

@@ -1,15 +1,32 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send, MessageCircle } from 'lucide-react';
+import axios from 'axios';
 import PageTransition from '../components/layout/PageTransition';
 
 const Contact = () => {
     const [status, setStatus] = useState('');
+    const [msg, setMsg] = useState('');
+    const [formData, setFormData] = useState({ name: '', lastName: '', email: '', message: '' });
 
-    const handleSubmit = (e) => {
+    const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setStatus('sending');
-        setTimeout(() => setStatus('sent'), 2000); // Mock send
+        try {
+            await axios.post('http://localhost:5000/api/contact', {
+                name: `${formData.name} ${formData.lastName}`,
+                email: formData.email,
+                message: formData.message
+            });
+            setStatus('sent');
+            setMsg('¡Mensaje enviado con éxito! 💖');
+            setFormData({ name: '', lastName: '', email: '', message: '' });
+        } catch (err) {
+            setStatus('error');
+            setMsg('Error al enviar. Intenta de nuevo.');
+        }
     };
 
     return (
@@ -65,28 +82,29 @@ const Contact = () => {
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold uppercase text-gray-400 ml-4">Nombre</label>
-                                        <input type="text" className="w-full bg-gray-50 border-2 border-transparent p-4 rounded-2xl font-bold text-gray-600 focus:bg-white focus:border-primary-light focus:outline-none transition-all" placeholder="Tu nombre" required />
+                                        <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full bg-gray-50 border-2 border-transparent p-4 rounded-2xl font-bold text-gray-600 focus:bg-white focus:border-primary-light focus:outline-none transition-all" placeholder="Tu nombre" required />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold uppercase text-gray-400 ml-4">Apellido</label>
-                                        <input type="text" className="w-full bg-gray-50 border-2 border-transparent p-4 rounded-2xl font-bold text-gray-600 focus:bg-white focus:border-primary-light focus:outline-none transition-all" placeholder="Tu apellido" />
+                                        <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} className="w-full bg-gray-50 border-2 border-transparent p-4 rounded-2xl font-bold text-gray-600 focus:bg-white focus:border-primary-light focus:outline-none transition-all" placeholder="Tu apellido" />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase text-gray-400 ml-4">Email</label>
-                                    <input type="email" className="w-full bg-gray-50 border-2 border-transparent p-4 rounded-2xl font-bold text-gray-600 focus:bg-white focus:border-primary-light focus:outline-none transition-all" placeholder="tu@email.com" required />
+                                    <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full bg-gray-50 border-2 border-transparent p-4 rounded-2xl font-bold text-gray-600 focus:bg-white focus:border-primary-light focus:outline-none transition-all" placeholder="tu@email.com" required />
                                 </div>
 
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase text-gray-400 ml-4">Mensaje</label>
-                                    <textarea rows="4" className="w-full bg-gray-50 border-2 border-transparent p-4 rounded-2xl font-bold text-gray-600 focus:bg-white focus:border-primary-light focus:outline-none transition-all resize-none" placeholder="¿Cómo podemos ayudarte?" required></textarea>
+                                    <textarea rows="4" name="message" value={formData.message} onChange={handleChange} className="w-full bg-gray-50 border-2 border-transparent p-4 rounded-2xl font-bold text-gray-600 focus:bg-white focus:border-primary-light focus:outline-none transition-all resize-none" placeholder="¿Cómo podemos ayudarte?" required></textarea>
                                 </div>
 
-                                <button className="w-full py-4 bg-secondary text-white rounded-2xl font-bold text-lg hover:bg-primary hover:shadow-lg hover:-translate-y-1 transition-all duration-300 shadow-md flex items-center justify-center space-x-2">
-                                    <span>{status === 'sending' ? 'Enviando...' : status === 'sent' ? 'Mensaje Enviado' : 'Enviar Mensaje'}</span>
+                                <button disabled={status === 'sending'} className="w-full py-4 bg-secondary text-white rounded-2xl font-bold text-lg hover:bg-primary hover:shadow-lg hover:-translate-y-1 transition-all duration-300 shadow-md flex items-center justify-center space-x-2 disabled:opacity-70">
+                                    <span>{status === 'sending' ? 'Enviando...' : 'Enviar Mensaje'}</span>
                                     <Send className="w-5 h-5" />
                                 </button>
+                                {msg && <p className="text-center font-bold text-primary mt-2">{msg}</p>}
                             </form>
                         </motion.div>
 

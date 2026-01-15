@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, AlertCircle, Heart } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
+import axios from 'axios';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import PageTransition from '../components/layout/PageTransition';
@@ -22,6 +24,21 @@ const Login = () => {
             navigate('/'); // Redirect to home on success
         } catch (err) {
             setError(err.response?.data?.msg || 'Credenciales inválidas');
+        }
+    };
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        try {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/google`, {
+                token: credentialResponse.credential
+            });
+            localStorage.setItem('token', res.data.token);
+            // We need a way to refresh context, usually window.location.reload() or exposing a method
+            // For now, reload is safest simple way or calling a context method if exposed
+            window.location.href = '/';
+        } catch (err) {
+            console.error(err);
+            setError('Error al iniciar sesión con Google');
         }
     };
 
@@ -92,17 +109,23 @@ const Login = () => {
                                 <input type="checkbox" className="form-checkbox text-primary border-2 border-gray-300 rounded-md focus:ring-0 transition-colors group-hover:border-primary" />
                                 <span className="font-bold text-gray-400 group-hover:text-primary transition-colors">Recordarme</span>
                             </label>
-                            <a href="#" className="font-bold text-gray-400 hover:text-primary transition-colors">¿Olvidaste tu contraseña?</a>
+                            <Link to="/forgot-password" className="font-bold text-gray-400 hover:text-primary transition-colors">¿Olvidaste tu contraseña?</Link>
                         </div>
 
                         <button className="w-full py-4 bg-secondary text-white rounded-2xl font-bold text-lg hover:bg-primary hover:shadow-lg hover:-translate-y-1 transition-all duration-300 shadow-md">
                             Iniciar Sesión 🌸
                         </button>
 
-                        <button type="button" className="w-full py-4 border-2 border-gray-100 text-gray-500 font-bold rounded-2xl hover:bg-gray-50 hover:text-secondary transition-all flex items-center justify-center space-x-3">
-                            <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="G" />
-                            <span>Continuar con Google</span>
-                        </button>
+                        <div className="flex justify-center">
+                            <GoogleLogin
+                                onSuccess={handleGoogleSuccess}
+                                onError={() => setError('Error al iniciar sesión con Google')}
+                                useOneTap
+                                shape="pill"
+                                text="continue_with"
+                                locale="es"
+                            />
+                        </div>
                     </form>
 
                     <p className="mt-8 text-center text-sm text-gray-400 font-medium">

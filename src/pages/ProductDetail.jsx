@@ -71,12 +71,33 @@ const ProductDetail = () => {
 
     const currentImage = (product.images && product.images.length > 0) ? [product.image, ...product.images][activeImg] : product.image;
 
+    const productSchema = product ? {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": product.name,
+        "image": product.image,
+        "description": product.description,
+        "brand": {
+            "@type": "Brand",
+            "name": "Kimju Hogar"
+        },
+        "offers": {
+            "@type": "Offer",
+            "priceCurrency": "COP",
+            "price": product.price,
+            "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            "url": window.location.href
+        }
+    } : null;
+
     return (
         <PageTransition>
             <SEO
                 title={product.name}
                 description={product.description}
                 image={product.image}
+                schema={productSchema}
+                canonical={window.location.href}
             />
             <div className="bg-white min-h-screen pt-28 pb-20 overflow-hidden relative">
                 {/* Background Blobs */}

@@ -1,9 +1,25 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Twitter, MessageCircle, Heart } from 'lucide-react';
+import axios from 'axios';
+import { Facebook, Instagram, Twitter, MessageCircle, Heart, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
 import logo from '../../assets/kimju-hogar-logo.jpg';
 
 const Footer = () => {
+    const [email, setEmail] = useState('');
+    const [msg, setMsg] = useState('');
+
+    const handleSubscribe = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await axios.post('http://localhost:5000/api/newsletter', { email });
+            setMsg(res.data.msg);
+            setEmail('');
+            setTimeout(() => setMsg(''), 5000);
+        } catch (err) {
+            setMsg('Error al suscribirse');
+        }
+    };
     return (
         <footer className="bg-primary pt-24 pb-12 relative overflow-hidden text-white">
             {/* Decorative Top Wave */}
@@ -38,6 +54,24 @@ const Footer = () => {
                         <p className="text-pink-50/80 text-sm leading-relaxed max-w-xs font-medium italic">
                             Tu espacio favorito para encontrar accesorios llenos de encanto y estilo. ✨
                         </p>
+
+                        <div className="pt-4">
+                            <p className="text-xs font-bold uppercase text-pink-200 mb-2">Suscríbete al Club</p>
+                            <form onSubmit={handleSubscribe} className="flex gap-2 relative">
+                                <input
+                                    type="email"
+                                    placeholder="email@ejemplo.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="bg-white/10 border border-white/20 rounded-full px-4 py-2 text-xs text-white placeholder:text-pink-100/50 focus:outline-none focus:bg-white/20 focus:border-pink-200 transition-all w-full"
+                                    required
+                                />
+                                <button type="submit" className="bg-pink-500 hover:bg-pink-400 text-white rounded-full p-2 transition-colors absolute right-1 top-0 bottom-0 my-auto h-8 w-8 flex items-center justify-center">
+                                    <Send className="w-3 h-3" />
+                                </button>
+                            </form>
+                            {msg && <p className="text-[10px] text-pink-200 mt-1 font-bold">{msg}</p>}
+                        </div>
                     </div>
 
                     {/* Links */}
@@ -55,6 +89,7 @@ const Footer = () => {
                     <div>
                         <h4 className="font-display font-bold text-xl mb-6 text-white border-b-2 border-white/20 pb-2 inline-block">Soporte</h4>
                         <ul className="space-y-4 text-sm text-pink-50 font-medium">
+                            <li><Link to="/faq" className="hover:text-white transition-all flex items-center gap-2 group"><span className="group-hover:rotate-12 transition-transform">❓</span> Preguntas Frecuentes</Link></li>
                             <li><Link to="/terms" className="hover:text-white transition-all flex items-center gap-2 group"><span className="group-hover:rotate-12 transition-transform">⚖️</span> Términos y Condiciones</Link></li>
                             <li><Link to="/privacy" className="hover:text-white transition-all flex items-center gap-2 group"><span className="group-hover:rotate-12 transition-transform">🛡️</span> Privacidad</Link></li>
                             <li><a href="mailto:info@kimjuhogar.com" className="hover:text-white transition-all flex items-center gap-2 group"><span className="group-hover:rotate-12 transition-transform">📧</span> info@kimjuhogar.com</a></li>

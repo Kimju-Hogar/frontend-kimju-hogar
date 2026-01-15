@@ -25,6 +25,7 @@ const UserProfile = () => {
     });
     const [updating, setUpdating] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     // Address Management State
     const [showAddressForm, setShowAddressForm] = useState(false);
@@ -32,12 +33,16 @@ const UserProfile = () => {
     const [addressForm, setAddressForm] = useState({
         name: '',
         street: '',
+        neighborhood: '',
         city: '',
         state: '',
         zip: '',
         country: 'Colombia',
+        additionalInfo: '',
+        phone: '',
         isDefault: false
     });
+    const [editingAddressId, setEditingAddressId] = useState(null);
 
     const [favorites, setFavorites] = useState([]);
     const [favsLoading, setFavsLoading] = useState(false);
@@ -131,17 +136,45 @@ const UserProfile = () => {
         e.preventDefault();
         setUpdating(true);
         setMessage({ type: '', text: '' });
+
+        if (formData.password !== formData.confirmPassword) {
+            setMessage({ type: 'error', text: 'Las contraseñas no coinciden' });
+            setUpdating(false);
+            return;
+        }
+
         try {
             const token = localStorage.getItem('token');
-            await axios.put('http://localhost:5000/api/users/profile', formData, {
+            const res = await axios.put('http://localhost:5000/api/users/profile', formData, {
                 headers: { 'x-auth-token': token }
             });
+            console.log("Profile Update Response:", res.data);
             setMessage({ type: 'success', text: 'Perfil actualizado correctamente' });
-            await refreshUser(); // Sync Global State
+
+            // Safe refresh
+            try {
+                await refreshUser();
+            } catch (refreshErr) {
+                console.warn("Global state refresh warning:", refreshErr);
+            }
         } catch (err) {
-            setMessage({ type: 'error', text: 'Error al actualizar el perfil' });
+            console.error("Profile update error detail:", err);
+            setMessage({ type: 'error', text: err.response?.data?.msg || 'Error al actualizar el perfil' });
         } finally {
             setUpdating(false);
+        }
+    };
+
+    const deleteAccount = async () => {
+        try {
+            await axios.delete('http://localhost:5000/api/users/profile', {
+                headers: { 'x-auth-token': localStorage.getItem('token') }
+            });
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        } catch (err) {
+            console.error(err);
+            setMessage({ type: 'error', text: 'No se pudo eliminar la cuenta' });
         }
     };
 
@@ -151,20 +184,66 @@ const UserProfile = () => {
         setMessage({ type: '', text: '' });
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/users/address', addressForm, {
-                headers: { 'x-auth-token': token }
-            });
+            const config = { headers: { 'x-auth-token': token } };
+
+            if (editingAddressId) {
+                // Update existing
+                await axios.put(`http://localhost:5000/api/users/address/${editingAddressId}`, addressForm, config);
+                setMessage({ type: 'success', text: 'Dirección actualizada correctamente' });
+            } else {
+                // Create new
+                await axios.post('http://localhost:5000/api/users/address', addressForm, config);
+                setMessage({ type: 'success', text: 'Dirección agregada correctamente' });
+            }
+
             await refreshUser();
             setShowAddressForm(false);
-            setAddressForm({ name: '', street: '', city: '', state: '', zip: '', country: 'Colombia', isDefault: false });
-            setMessage({ type: 'success', text: 'Dirección agregada correctamente' });
+            setEditingAddressId(null);
+            setAddressForm({ name: '', street: '', neighborhood: '', city: '', state: '', zip: '', country: 'Colombia', additionalInfo: '', phone: '', isDefault: false });
         } catch (err) {
-            console.error("Error adding address", err);
-            setMessage({ type: 'error', text: 'Error al agregar la dirección' });
+            console.error("Error saving address", err);
+            setMessage({ type: 'error', text: 'Error al guardar la dirección' });
         } finally {
             setAddressLoading(false);
         }
     };
+
+    const handleEditAddress = (addr) => {
+        setAddressForm({
+            name: addr.name || '',
+            street: addr.street || '',
+            neighborhood: addr.neighborhood || '',
+            city: addr.city || '',
+            state: addr.state || '',
+            zip: addr.zip || '',
+            country: addr.country || 'Colombia',
+            additionalInfo: addr.additionalInfo || '',
+            phone: addr.phone || '',
+            isDefault: addr.isDefault || false
+        });
+        setEditingAddressId(addr._id);
+        setShowAddressForm(true);
+        window.scrollTo({ top: 300, behavior: 'smooth' });
+    };
+
+    const handleDeleteAddress = async (addressId) => {
+        if (!window.confirm('¿Estás seguro de que quieres eliminar esta dirección?')) return;
+        setAddressLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`http://localhost:5000/api/users/address/${addressId}`, {
+                headers: { 'x-auth-token': token }
+            });
+            await refreshUser();
+            setMessage({ type: 'success', text: 'Dirección eliminada correctamente' });
+        } catch (err) {
+            console.error("Error deleting address", err);
+            setMessage({ type: 'error', text: 'Error al eliminar la dirección' });
+        } finally {
+            setAddressLoading(false);
+        }
+    };
+
 
     const tabs = [
         { id: 'profile', label: 'Mi Perfil', icon: User },
@@ -266,6 +345,55 @@ const UserProfile = () => {
                                         <Save className="w-4 h-4" />
                                         <span>{updating ? 'Guardando...' : 'Guardar Cambios'}</span>
                                     </button>
+
+                                    <div className="pt-6 border-t border-gray-100 mt-8">
+                                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Seguridad y Cuenta</h3>
+
+                                        {/* Google Status */}
+                                        <div className="flex items-center justify-between bg-gray-50 p-4 rounded-xl mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-6 h-6" alt="Google" />
+                                                <div>
+                                                    <p className="font-bold text-gray-700">Cuenta de Google</p>
+                                                    <p className="text-xs text-gray-400">{user?.googleId ? 'Vinculada correctamente' : 'No vinculada'}</p>
+                                                </div>
+                                            </div>
+                                            {user?.googleId && <span className="text-xs font-bold bg-green-100 text-green-600 px-3 py-1 rounded-full">Conectado</span>}
+                                        </div>
+
+                                        {/* Delete Account */}
+                                        <div className="mt-8">
+                                            {!showDeleteConfirm ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowDeleteConfirm(true)}
+                                                    className="text-red-400 text-sm font-bold hover:text-red-600 underline"
+                                                >
+                                                    Eliminar mi cuenta permanentemente
+                                                </button>
+                                            ) : (
+                                                <div className="bg-red-50 p-4 rounded-xl border border-red-100 animate-fade-in">
+                                                    <p className="text-red-800 font-bold text-sm mb-2">¿Estás seguro? Esta acción no se puede deshacer.</p>
+                                                    <div className="flex gap-3">
+                                                        <button
+                                                            type="button"
+                                                            onClick={deleteAccount}
+                                                            className="bg-red-500 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-red-600"
+                                                        >
+                                                            Sí, eliminar
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShowDeleteConfirm(false)}
+                                                            className="bg-white text-gray-600 text-xs font-bold px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+                                                        >
+                                                            Cancelar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </form>
                             )}
 
@@ -449,7 +577,7 @@ const UserProfile = () => {
                                                     <div className="flex flex-col md:flex-row justify-between gap-8 mb-12">
                                                         <div>
                                                             <h1 className="text-3xl font-display font-black text-primary mb-2">KIMJU <span className="text-secondary">HOGAR</span></h1>
-                                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Tienda de Regalos y Kawaii</p>
+                                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Tienda de decoración y detalles</p>
                                                             <p className="text-xs font-medium text-gray-400">NIT: 123.456.789-0 • Medellín, Colombia</p>
                                                         </div>
                                                         <div className="text-right">
@@ -546,7 +674,15 @@ const UserProfile = () => {
                                     <div className="flex justify-between items-center border-b-2 border-pink-50 pb-4">
                                         <h2 className="text-2xl font-bold text-secondary">Mis Direcciones</h2>
                                         <button
-                                            onClick={() => setShowAddressForm(!showAddressForm)}
+                                            onClick={() => {
+                                                if (showAddressForm) {
+                                                    setShowAddressForm(false);
+                                                    setEditingAddressId(null);
+                                                    setAddressForm({ name: '', street: '', neighborhood: '', city: '', state: '', zip: '', country: 'Colombia', additionalInfo: '', phone: '', isDefault: false });
+                                                } else {
+                                                    setShowAddressForm(true);
+                                                }
+                                            }}
                                             className={`text-xs font-bold uppercase border-2 border-pink-200 rounded-full px-4 py-2 transition-colors ${showAddressForm ? 'bg-pink-100 text-primary' : 'hover:bg-primary hover:text-white text-primary'}`}
                                         >
                                             {showAddressForm ? 'Cancelar' : '+ Nueva'}
@@ -570,6 +706,21 @@ const UserProfile = () => {
                                                     value={addressForm.street} onChange={e => setAddressForm({ ...addressForm, street: e.target.value })}
                                                     className="border-2 border-white rounded-xl p-3 font-bold focus:border-primary-light outline-none shadow-sm h-[58px]"
                                                 />
+                                                <input
+                                                    type="text" placeholder="Barrio"
+                                                    value={addressForm.neighborhood} onChange={e => setAddressForm({ ...addressForm, neighborhood: e.target.value })}
+                                                    className="border-2 border-white rounded-xl p-3 font-bold focus:border-primary-light outline-none shadow-sm h-[58px]"
+                                                />
+                                                <input
+                                                    type="text" placeholder="Info Adicional (Apto, Unidad, Torre)"
+                                                    value={addressForm.additionalInfo} onChange={e => setAddressForm({ ...addressForm, additionalInfo: e.target.value })}
+                                                    className="border-2 border-white rounded-xl p-3 font-bold focus:border-primary-light outline-none shadow-sm h-[58px]"
+                                                />
+                                                <input
+                                                    type="text" placeholder="Teléfono de Contacto"
+                                                    value={addressForm.phone} onChange={e => setAddressForm({ ...addressForm, phone: e.target.value })}
+                                                    className="border-2 border-white rounded-xl p-3 font-bold focus:border-primary-light outline-none shadow-sm h-[58px]"
+                                                />
                                                 <AutocompleteField
                                                     placeholder="Departamento"
                                                     value={addressForm.state}
@@ -585,6 +736,11 @@ const UserProfile = () => {
                                                             ? (colombiaData.find(d => d.departamento === addressForm.state)?.ciudades || [])
                                                             : colombiaData.flatMap(d => d.ciudades)
                                                     }
+                                                />
+                                                <input
+                                                    type="text" placeholder="Código Postal (Opcional)"
+                                                    value={addressForm.zip} onChange={e => setAddressForm({ ...addressForm, zip: e.target.value })}
+                                                    className="border-2 border-white rounded-xl p-3 font-bold focus:border-primary-light outline-none shadow-sm h-[58px]"
                                                 />
                                             </div>
                                             <div className="flex items-center space-x-2">
@@ -613,8 +769,18 @@ const UserProfile = () => {
                                                     <p className="text-gray-400 text-sm">{addr.city}, {addr.state}</p>
                                                 </div>
                                                 <div className="flex space-x-4">
-                                                    <button className="text-xs font-bold text-gray-400 hover:text-primary transition-colors">Editar</button>
-                                                    <button className="text-xs font-bold text-gray-400 hover:text-red-400 transition-colors">Eliminar</button>
+                                                    <button
+                                                        onClick={() => handleEditAddress(addr)}
+                                                        className="text-xs font-bold text-gray-400 hover:text-primary transition-colors"
+                                                    >
+                                                        Editar
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteAddress(addr._id)}
+                                                        className="text-xs font-bold text-gray-400 hover:text-red-400 transition-colors"
+                                                    >
+                                                        Eliminar
+                                                    </button>
                                                 </div>
                                             </div>
                                         )) : (

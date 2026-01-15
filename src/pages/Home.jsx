@@ -17,6 +17,26 @@ const Home = () => {
 
     const [categories, setCategories] = useState([]);
 
+    // Newsletter State
+    const [email, setEmail] = useState('');
+    const [message, setMessage] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleSubscribe = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setMessage('');
+        try {
+            const res = await axios.post('http://localhost:5000/api/newsletter', { email });
+            setMessage(res.data.msg);
+            setEmail('');
+        } catch (err) {
+            setMessage(err.response?.data?.msg || 'Error al suscribirse. Intenta de nuevo.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -34,9 +54,34 @@ const Home = () => {
     }, []);
 
 
+    const organizationSchema = {
+        "@context": "https://schema.org",
+        "@type": "Store",
+        "name": "Kimju Hogar",
+        "image": "https://kimjuhogar.com/logo.png", // Start using absolute URLs for production
+        "description": "Tienda de decoración, hogar y accesorios en Valledupar.",
+        "telephone": "+573000000000",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Calle Principal #123",
+            "addressLocality": "Valledupar",
+            "addressRegion": "Cesar",
+            "postalCode": "200001",
+            "addressCountry": "CO"
+        },
+        "url": "https://kimjuhogar.com",
+        "priceRange": "$$"
+    };
+
     return (
         <PageTransition>
-            <SEO title="Tu Tienda Kawaii" description="Kimju Hogar es tu tienda favorita de decoración, hogar y cositas maravillosas en Valledupar, Colombia. ✨" />
+            <SEO
+                title="Tu Tienda para tu Hogar"
+                description="Kimju Hogar es tu tienda favorita de decoración, hogar y cositas maravillosas en Valledupar, Colombia. ✨"
+                schema={organizationSchema}
+                canonical="https://kimjuhogar.com/"
+            />
+            <h1 className="sr-only">Kimju Hogar - Decoración y Estilo en Colombia</h1>
             <div className="min-h-screen pt-24 overflow-x-hidden">
                 {/* Hero Section - Restored to Minimalist Image + Buttons */}
                 <section className="relative w-full h-auto min-h-[600px] md:h-auto overflow-hidden bg-white">
@@ -265,22 +310,38 @@ const Home = () => {
 
                         <div className="relative z-10">
                             <h2 className="text-4xl md:text-5xl font-display font-black text-white mb-6">
-                                ¡Únete al club más cute! 🎀
+                                ¡Únete a nuestro Club! 🎀
                             </h2>
                             <p className="text-pink-100 text-lg mb-10 max-w-xl mx-auto">
                                 Recibe ofertas exclusivas, tips de decoración y sé la primera en enterarte de los nuevos lanzamientos.
                             </p>
 
-                            <form className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto" onSubmit={(e) => e.preventDefault()}>
+                            <form className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto" onSubmit={handleSubscribe}>
                                 <input
                                     type="email"
                                     placeholder="Tu correo electrónico..."
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     className="flex-1 px-6 py-4 rounded-full border-none outline-none focus:ring-4 focus:ring-pink-300 transition-all font-medium"
+                                    required
                                 />
-                                <button className="bg-secondary text-white px-8 py-4 rounded-full font-bold uppercase tracking-wider hover:bg-gray-900 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                                    Suscribirse
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="bg-secondary text-white px-8 py-4 rounded-full font-bold uppercase tracking-wider hover:bg-gray-900 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {loading ? '...' : 'Suscribirse'}
                                 </button>
                             </form>
+                            {message && (
+                                <motion.p
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className={`mt-4 font-bold ${message.includes('Error') || message.includes('registrado') ? 'text-red-200' : 'text-white'}`}
+                                >
+                                    {message}
+                                </motion.p>
+                            )}
                         </div>
                     </div>
                 </section>

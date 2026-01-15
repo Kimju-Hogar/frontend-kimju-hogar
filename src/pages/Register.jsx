@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Phone, AlertCircle, Star } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
+import axios from 'axios';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import PageTransition from '../components/layout/PageTransition';
@@ -31,6 +33,19 @@ const Register = () => {
             navigate('/'); // Redirect to home
         } catch (err) {
             setError(err.response?.data?.msg || 'Error al registrarse');
+        }
+    };
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        try {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/google`, {
+                token: credentialResponse.credential
+            });
+            localStorage.setItem('token', res.data.token);
+            window.location.href = '/';
+        } catch (err) {
+            console.error(err);
+            setError('Error al registrarse con Google');
         }
     };
 
@@ -147,6 +162,17 @@ const Register = () => {
                         <button className="w-full py-4 bg-gradient-to-r from-primary to-primary-dark text-white rounded-2xl font-bold text-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 shadow-md mt-6">
                             Crear Cuenta 💖
                         </button>
+
+                        <div className="flex justify-center mt-6">
+                            <GoogleLogin
+                                onSuccess={handleGoogleSuccess}
+                                onError={() => setError('Error al registrarse con Google')}
+                                useOneTap
+                                shape="pill"
+                                text="signup_with"
+                                locale="es"
+                            />
+                        </div>
 
                     </form>
 
