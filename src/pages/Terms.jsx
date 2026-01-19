@@ -28,11 +28,11 @@ const Terms = () => {
                                 <Truck className="w-6 h-6 text-primary" /> Políticas de Envío
                             </h2>
                             <div className="space-y-4 text-gray-600 font-medium leading-relaxed">
-                                <p>🚀 <span className="text-secondary font-black">Valledupar:</span> ¡Buenas noticias! El envío es totalmente <span className="text-secondary underline decoration-pink-300">GRATIS</span> dentro de la ciudad de Valledupar.</p>
-                                <p>📦 <span className="text-secondary font-black">Envíos Nacionales:</span> Realizamos envíos a todo el territorio nacional.</p>
+                                <p>🚀 <span className="text-secondary font-black">Valledupar:</span> El servicio de domicilio tiene un costo fijo aproximado de <span className="text-secondary font-bold">$6.000 COP</span>.</p>
+                                <p>📦 <span className="text-secondary font-black">Envíos Nacionales:</span> El costo varía según la transportadora y el destino.</p>
                                 <ul className="list-disc ml-6 space-y-2 text-sm">
-                                    <li>El costo del envío se calcula basándose en el valor total de tu compra y el destino.</li>
-                                    <li><span className="text-primary font-black">Pago contra entrega del envío:</span> El valor del envío se cancelará únicamente en el momento en que recibas tu producto, directamente a la empresa transportadora. No solicitamos pagos por el flete antes del envío.</li>
+                                    <li><span className="text-primary font-black">IMPORTANTE:</span> En nuestra web pagas únicamente el valor de los productos.</li>
+                                    <li><span className="text-primary font-black">Envío Contra Entrega:</span> El valor del envío (flete) lo pagarás <span className="underline decoration-pink-300">al recibir tu pedido</span>, directamente al domiciliario o empresa transportadora.</li>
                                 </ul>
                             </div>
                         </motion.section>

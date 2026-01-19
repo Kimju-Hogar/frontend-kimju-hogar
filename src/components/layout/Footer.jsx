@@ -92,7 +92,7 @@ const Footer = () => {
                             <li><Link to="/faq" className="hover:text-white transition-all flex items-center gap-2 group"><span className="group-hover:rotate-12 transition-transform">❓</span> Preguntas Frecuentes</Link></li>
                             <li><Link to="/terms" className="hover:text-white transition-all flex items-center gap-2 group"><span className="group-hover:rotate-12 transition-transform">⚖️</span> Términos y Condiciones</Link></li>
                             <li><Link to="/privacy" className="hover:text-white transition-all flex items-center gap-2 group"><span className="group-hover:rotate-12 transition-transform">🛡️</span> Privacidad</Link></li>
-                            <li><a href="mailto:info@kimjuhogar.com" className="hover:text-white transition-all flex items-center gap-2 group"><span className="group-hover:rotate-12 transition-transform">📧</span> info@kimjuhogar.com</a></li>
+                            <li><a href="mailto:soporte@kimjuhogar.com" className="hover:text-white transition-all flex items-center gap-2 group"><span className="group-hover:rotate-12 transition-transform">📧</span> soporte@kimjuhogar.com</a></li>
                         </ul>
                     </div>
 

@@ -3,8 +3,8 @@ import { MessageCircle } from 'lucide-react';
 
 const WhatsAppButton = () => {
     // Puedes cambiar este número por el real de Kimju Hogar
-    const phoneNumber = "573229447494"; // Ejemplo de número colombiano
-    const message = encodeURIComponent("¡Hola Kimju Hogar! 🧸 Me gustaría recibir más información sobre sus productos.");
+    const phoneNumber = "573146757580"; // Ejemplo de número colombiano
+    const message = encodeURIComponent("¡Hola Kimju Hogar! Me gustaría recibir más información sobre sus productos.");
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
 
     return (

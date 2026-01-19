@@ -236,7 +236,7 @@ const ProductDetail = () => {
                             <div className="flex gap-6 text-xs font-bold uppercase text-gray-500">
                                 <div className="flex items-center bg-pink-50/50 px-4 py-2 rounded-lg gap-2 border border-pink-100">
                                     <Truck className="w-5 h-5 text-primary" />
-                                    <span className="text-primary-dark">Envío GRATIS en Valledupar</span>
+                                    <span className="text-primary-dark">Envío Contra Entrega</span>
                                 </div>
                                 <div className="flex items-center bg-gray-50 px-4 py-2 rounded-lg gap-2">
                                     <Star className="w-5 h-5 text-primary" />

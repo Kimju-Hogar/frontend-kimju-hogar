@@ -100,7 +100,7 @@ const Cart = () => {
                                     </div>
                                     <div className="flex justify-between text-gray-400">
                                         <span>Envío</span>
-                                        <span className="text-green-500 font-bold bg-green-50 px-2 py-0.5 rounded-full text-xs">Gratis 💖</span>
+                                        <span className="text-gray-500 font-bold bg-gray-100 px-2 py-0.5 rounded-full text-xs">Contra Entrega</span>
                                     </div>
                                     <div className="flex justify-between text-2xl font-display font-black text-secondary border-t border-dashed border-pink-200 pt-6 mt-4">
                                         <span>Total</span>

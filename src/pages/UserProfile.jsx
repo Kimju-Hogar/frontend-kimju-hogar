@@ -148,7 +148,6 @@ const UserProfile = () => {
             const res = await axios.put('http://localhost:5000/api/users/profile', formData, {
                 headers: { 'x-auth-token': token }
             });
-            console.log("Profile Update Response:", res.data);
             setMessage({ type: 'success', text: 'Perfil actualizado correctamente' });
 
             // Safe refresh
@@ -649,7 +648,7 @@ const UserProfile = () => {
                                                         </div>
                                                         <div className="flex justify-between w-full max-w-[200px] text-sm font-bold text-green-500">
                                                             <span>Envío:</span>
-                                                            <span>Gratis</span>
+                                                            <span className="text-xs font-bold bg-gray-100 text-gray-500 px-2 py-1 rounded">Contra Entrega</span>
                                                         </div>
                                                         <div className="flex justify-between w-full max-w-[250px] text-2xl font-display font-black text-secondary pt-4 border-t border-dashed border-pink-100">
                                                             <span className="text-primary">TOTAL:</span>

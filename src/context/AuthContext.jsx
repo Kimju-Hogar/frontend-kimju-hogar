@@ -9,12 +9,7 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Configure axios defaults
-    // Assuming backend is on port 5000, vite proxy might handle this or we set base URL
-    // For now using relative path assuming proxy in vite.config or full url
     const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    console.log('AuthContext configured with API URL:', baseURL);
-
     const api = axios.create({
         baseURL: baseURL,
     });

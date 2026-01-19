@@ -53,9 +53,9 @@ const Contact = () => {
 
                             <div className="space-y-6">
                                 {[
-                                    { icon: Mail, title: "Email", t1: "hola@kimjuhogar.com", t2: "soporte@kimjuhogar.com", color: "text-blue-400", bg: "bg-blue-50" },
-                                    { icon: Phone, title: "Teléfono", t1: "+57 300 123 4567", t2: "WhatsApp Disponible", color: "text-green-500", bg: "bg-green-50" },
-                                    { icon: MapPin, title: "Ubicación", t1: "Calle de la Moda #10-20", t2: "Valledupar, Colombia", color: "text-red-400", bg: "bg-red-50" }
+                                    { icon: Mail, title: "Email", t1: "soporte@kimjuhogar.com", t2: "soporte@kimjuhogar.com", color: "text-blue-400", bg: "bg-blue-50" },
+                                    { icon: Phone, title: "Teléfono", t1: "+57 314 675 7580", t2: "WhatsApp Disponible", color: "text-green-500", bg: "bg-green-50" },
+                                    { icon: MapPin, title: "Ubicación", t1: "Valledupar, Colombia", color: "text-red-400", bg: "bg-red-50" }
                                 ].map((item, idx) => (
                                     <div key={idx} className="flex items-start space-x-6 group cursor-pointer hover:bg-white/80 p-6 rounded-[2rem] transition-all border border-transparent hover:border-pink-100 hover:shadow-lg">
                                         <div className={`${item.bg} ${item.color} p-4 rounded-2xl transition-colors shadow-sm`}>

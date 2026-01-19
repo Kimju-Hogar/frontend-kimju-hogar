@@ -12,16 +12,16 @@ const FAQ = () => {
             category: "Envíos",
             icon: Truck,
             questions: [
-                { q: "¿Cuánto tiempo tarda el envío?", a: "Para Valledupar entregamos el mismo día. Para el resto del país, el tiempo es de 2 a 5 días hábiles dependiendo de la transportadora." },
-                { q: "¿El envío es gratis?", a: "¡Sí! El domicilio es totalmente GRATIS para toda la ciudad de Valledupar. Para envíos nacionales, el costo depende del peso y destino." },
+                { q: "¿Cuánto tiempo tarda el envío?", a: "Para Valledupar entregamos el mismo día (si pides antes de 4 PM). Para el resto del país, de 2 a 5 días hábiles." },
+                { q: "¿El envío es gratis?", a: "El envío se paga Contra Entrega. En Valledupar cuesta ~$6.000 COP. Para el resto del país, depende de la transportadora." },
             ]
         },
         {
             category: "Pagos",
             icon: CreditCard,
             questions: [
-                { q: "¿Qué métodos de pago aceptan?", a: "Aceptamos tarjetas de crédito/débito, PSE, Nequi y Daviplata a través de Mercado Pago. Es 100% seguro." },
-                { q: "¿Puedo pagar contra entrega?", a: "El pago contra entrega solo está habilitado para envíos locales en Valledupar. Para nacionales, debes pagar antes del envío." },
+                { q: "¿Qué métodos de pago aceptan?", a: "En la web pagas tus productos con tarjeta, PSE, Nequi o Daviplata (Mercado Pago). El envío lo pagas en efectivo al recibir." },
+                { q: "¿Puedo pagar contra entrega?", a: "Únicamente el valor del ENVÍO se paga contra entrega. Los productos se deben cancelar previamente en la página web." },
             ]
         },
         {

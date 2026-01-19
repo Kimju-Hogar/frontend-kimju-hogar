@@ -96,7 +96,7 @@ const Privacy = () => {
                                 <a href="https://wa.me/573000000000" target="_blank" className="flex items-center justify-center gap-2 bg-white text-[#25D366] px-6 py-2 rounded-xl font-bold border-2 border-[#25D366] hover:bg-green-50 transition-colors shadow-sm">
                                     <MessageCircle className="w-5 h-5" /> WhatsApp
                                 </a>
-                                <a href="mailto:privacidad@kimjuhogar.com" className="flex items-center justify-center gap-2 bg-white text-gray-600 px-6 py-2 rounded-xl font-bold border-2 border-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
+                                <a href="mailto:soporte@kimjuhogar.com" className="flex items-center justify-center gap-2 bg-white text-gray-600 px-6 py-2 rounded-xl font-bold border-2 border-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
                                     <Mail className="w-5 h-5" /> Email Legal
                                 </a>
                             </div>

@@ -25,8 +25,6 @@ const Checkout = () => {
 
     useEffect(() => {
         if (preferenceId) {
-            console.log('Preference ID finalized:', preferenceId);
-            // Auto scroll to payment button
             setTimeout(() => {
                 const element = document.getElementById('mercadopago-button-container');
                 if (element) {
@@ -116,8 +114,6 @@ const Checkout = () => {
             }, {
                 headers: { 'x-auth-token': token }
             });
-
-            console.log('Preference Response:', preference);
 
             if (preference && preference.id) {
                 setPreferenceId(preference.id);
@@ -327,11 +323,9 @@ const Checkout = () => {
                                                 key={preferenceId}
                                                 initialization={{ preferenceId: preferenceId, redirectMode: 'modal' }}
                                                 onReady={() => {
-                                                    console.log('Mercado Pago Wallet is ready!');
                                                     setMpReady(true);
                                                 }}
                                                 onError={(error) => {
-                                                    console.error('Mercado Pago Wallet Error:', error);
                                                     setMpReady(false);
                                                 }}
                                             />
@@ -386,7 +380,7 @@ const Checkout = () => {
                                 </div>
                                 <div className="flex justify-between text-gray-400 font-medium">
                                     <span>Envío</span>
-                                    <span className="text-green-500 font-bold">Gratis</span>
+                                    <span className="text-gray-500 font-bold bg-gray-100 px-2 py-0.5 rounded-full text-xs">Contra Entrega</span>
                                 </div>
                                 <div className="flex justify-between items-center text-2xl font-display font-black text-primary pt-2">
                                     <span>Total</span>
