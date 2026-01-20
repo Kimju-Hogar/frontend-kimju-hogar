@@ -72,6 +72,7 @@ const Shop = () => {
     return (
         <PageTransition>
             <SEO title="Tienda de Cositas Lindas" description="Explora nuestro catálogo de productos de decoración para el hogar en Valledupar." />
+            <div className='pt-22 pb-20' ></div>
             <div className="bg-white/50 min-h-screen pt-24 pb-20 relative overflow-hidden">
                 {/* Background decorations */}
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-pink-100/40 rounded-full blur-[100px] -z-10 pointer-events-none" />

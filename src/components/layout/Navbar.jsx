@@ -15,6 +15,21 @@ const Navbar = () => {
     const [categories, setCategories] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
 
+    // Banner State
+    const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+    const bannerMessages = [
+        "🎁 Bienvenidos a Kimju Hogar 🎀",
+        "🚀 Envíos Seguros a Todo Colombia 🇨🇴",
+        "📦 Valledupar: Domicilios Contra Entrega (~$6k) ✨"
+    ];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentBannerIndex((prev) => (prev + 1) % bannerMessages.length);
+        }, 4000); // Change every 4 seconds
+        return () => clearInterval(interval);
+    }, []);
+
     const { logout, user } = useAuth();
     const { getCartCount, setIsCartOpen } = useCart();
     const location = useLocation();
@@ -59,8 +74,24 @@ const Navbar = () => {
                 animate={{ y: 0 }}
                 className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b-2 border-pink-100 shadow-sm"
             >
+                {/* Top Banner Carousel */}
+                <div className="bg-primary text-white overflow-hidden h-8 flex items-center justify-center relative">
+                    <AnimatePresence mode='wait'>
+                        <motion.div
+                            key={currentBannerIndex}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.5 }}
+                            className="absolute text-[10px] sm:text-xs font-bold uppercase tracking-widest text-center px-4"
+                        >
+                            {bannerMessages[currentBannerIndex]}
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-24">
+                    <div className="flex justify-between items-center h-20 sm:h-24">
 
                         {/* Logo */}
                         <Link to="/" className="flex items-center space-x-3 group">
@@ -217,7 +248,7 @@ const Navbar = () => {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: '100vh' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="fixed inset-0 bg-white/95 backdrop-blur-xl z-40 md:hidden pt-24 px-6 overflow-hidden flex flex-col items-center justify-center"
+                        className="fixed inset-0 bg-white/95 backdrop-blur-xl z-40 md:hidden pt-36 px-6 overflow-hidden flex flex-col items-center justify-center"
                     >
                         <div className="flex flex-col space-y-8 text-center w-full max-w-sm">
                             {navLinks.map((link, idx) => (

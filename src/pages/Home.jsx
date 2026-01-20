@@ -82,6 +82,7 @@ const Home = () => {
                 canonical="https://kimjuhogar.com/"
             />
             <h1 className="sr-only">Kimju Hogar - Decoración y Estilo en Colombia</h1>
+            <div className='pt-22 pb-4' ></div>
             <div className="min-h-screen pt-24 overflow-x-hidden">
                 {/* Hero Section - Restored to Minimalist Image + Buttons */}
                 <section className="relative w-full h-auto overflow-hidden bg-white">

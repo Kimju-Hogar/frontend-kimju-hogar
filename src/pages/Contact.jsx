@@ -31,6 +31,7 @@ const Contact = () => {
 
     return (
         <PageTransition>
+            <div className='pt-22 pb-20' ></div>
             <div className="pt-24 pb-20 min-h-screen bg-white relative overflow-hidden">
                 {/* Background Decorations */}
                 <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-pink-100 rounded-full blur-[100px] -z-10 opacity-60" />
@@ -42,9 +43,6 @@ const Contact = () => {
                         {/* Info Section */}
                         <div className="space-y-12">
                             <div>
-                                <div className="inline-block p-3 bg-pink-50 rounded-2xl mb-4">
-                                    <MessageCircle className="w-8 h-8 text-primary" />
-                                </div>
                                 <h1 className="text-5xl md:text-7xl font-display font-black text-secondary mb-6">Hablemos</h1>
                                 <p className="text-xl text-gray-400 font-medium max-w-md">
                                     ¿Tienes un proyecto en mente o dudas sobre un producto? Estamos aquí para ti. 🌸

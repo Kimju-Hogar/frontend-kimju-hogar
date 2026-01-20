@@ -101,15 +101,16 @@ const Footer = () => {
                         <h4 className="font-display font-bold text-xl mb-6 text-white border-b-2 border-white/20 pb-2 inline-block">Síguenos</h4>
                         <div className="flex space-x-4">
                             {[
-                                { Icon: Instagram, color: 'hover:text-pink-500' },
-                                { Icon: MessageCircle, color: 'hover:text-green-500' },
-                                { Icon: Facebook, color: 'hover:text-blue-500' }
-                            ].map(({ Icon, color }, idx) => (
+                                { Icon: Instagram, color: 'hover:text-pink-500', url: 'https://www.instagram.com/kimju_hogar/' },
+                                { Icon: MessageCircle, color: 'hover:text-green-500', url: 'https://wa.me/573146757580' },
+                            ].map(({ Icon, color, url }, idx) => (
                                 <motion.a
                                     key={idx}
                                     whileHover={{ y: -8, scale: 1.15 }}
                                     whileTap={{ scale: 0.9 }}
-                                    href="#"
+                                    href={url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className={`w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white ${color} transition-all duration-300 shadow-lg`}
                                 >
                                     <Icon className="w-6 h-6" />
