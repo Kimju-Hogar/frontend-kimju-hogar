@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../config/api';
 import { Mail, ArrowLeft, Send, Sparkles } from 'lucide-react';
 import PageTransition from '../../components/layout/PageTransition';
 import SEO from '../../components/common/SEO';
@@ -16,7 +16,7 @@ const ForgotPassword = () => {
         setMessage('');
 
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/forgot-password', { email });
+            const res = await api.post('/auth/forgot-password', { email });
             setMessage({ type: 'success', text: '¡Correo enviado! Revisa tu bandeja de entrada 💌' });
         } catch (err) {
             setMessage({ type: 'error', text: err.response?.data?.msg || 'Error al enviar el correo 😢' });

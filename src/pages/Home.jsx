@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import ProductCard from '../components/ui/ProductCard';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/api';
 import { ArrowRight, Star, Zap, Shield, Truck, Smartphone, Coffee, ShoppingBag, Heart, Sparkles, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PageTransition from '../components/layout/PageTransition';
@@ -27,7 +28,7 @@ const Home = () => {
         setLoading(true);
         setMessage('');
         try {
-            const res = await axios.post('http://localhost:5000/api/newsletter', { email });
+            const res = await api.post('/newsletter', { email });
             setMessage(res.data.msg);
             setEmail('');
         } catch (err) {
@@ -41,8 +42,8 @@ const Home = () => {
         const fetchData = async () => {
             try {
                 const [productsRes, categoriesRes] = await Promise.all([
-                    axios.get('http://localhost:5000/api/products'),
-                    axios.get('http://localhost:5000/api/categories')
+                    api.get('/products'),
+                    api.get('/categories')
                 ]);
                 setProducts(productsRes.data);
                 setCategories(categoriesRes.data);
@@ -88,10 +89,17 @@ const Home = () => {
                 <section className="relative w-full h-auto overflow-hidden bg-white">
                     {/* Full Banner Image (contains text/logo within it) */}
                     <div className="relative w-full">
-                        <img src={bannerHome} alt="Kimju Hogar Banner" className="w-full h-[60vh] object-cover object-center md:h-auto md:object-cover" />
+                        <img
+                            src={bannerHome}
+                            alt="Kimju Hogar Banner"
+                            className="w-full h-[60vh] object-cover object-center md:h-auto md:object-cover"
+                            width="1920"
+                            height="800"
+                            fetchpriority="high"
+                        />
 
                         {/* Buttons Overlay - Vertically Stacked, No Card Background */}
-                        <div className="absolute inset-0 flex flex-col justify-end items-center pb-32 sm:pb-12 md:pb-44 pointer-events-none">
+                        <div className="absolute inset-0 flex flex-col justify-end items-center pb- sm:pb-12 md:pb-44 pointer-events-none">
                             <div className="flex flex-col gap-3 sm:gap-4 pointer-events-auto w-full px-8 sm:px-0 sm:w-auto">
                                 <Link to="/shop" className="bg-[#F43F5E] text-white py-3 px-12 rounded-full font-bold uppercase tracking-widest hover:bg-[#BE123C] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 text-center text-sm md:text-base">
                                     Ver Colección
@@ -153,7 +161,14 @@ const Home = () => {
 
                                                 <div className="relative z-10 w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden flex items-center justify-center">
                                                     {cat.image ? (
-                                                        <img src={cat.image} alt={cat.name} className="w-full h-full object-cover group-hover:rotate-6 transition-transform duration-300" />
+                                                        <img
+                                                            src={cat.image}
+                                                            alt={cat.name}
+                                                            className="w-full h-full object-cover group-hover:rotate-6 transition-transform duration-300"
+                                                            loading="lazy"
+                                                            width="80"
+                                                            height="80"
+                                                        />
                                                     ) : (
                                                         <div className="text-pink-300">
                                                             <IconComp className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 group-hover:rotate-12 transition-transform" />
@@ -191,79 +206,7 @@ const Home = () => {
 
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
                             {products.slice(0, 4).map((product) => (
-                                <div
-                                    key={product._id}
-                                    className="group relative cursor-pointer"
-                                    onClick={() => navigate(`/product/${product._id}`)}
-                                >
-                                    <div className="card-kawaii h-full flex flex-col relative bg-white">
-                                        {/* Image Container */}
-                                        <div className="aspect-[4/5] overflow-hidden bg-gray-50 relative p-4">
-                                            {product.discount > 0 && (
-                                                <span className="absolute top-4 right-4 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm z-10 rotate-3">
-                                                    -{product.discount}% OFF
-                                                </span>
-                                            )}
-                                            <img
-                                                src={product.image || 'https://via.placeholder.com/400x500'}
-                                                alt={product.name}
-                                                className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-500"
-                                            />
-                                            {/* Quick Add Overlay */}
-                                            <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-b-2xl">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        addToCart(product);
-                                                        setIsCartOpen(true);
-                                                    }}
-                                                    className="bg-white text-primary font-bold px-6 py-2 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform hover:bg-primary hover:text-white relative z-30"
-                                                >
-                                                    Añadir al Carrito 🌸
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {/* Info */}
-                                        <div className="p-5 flex flex-col flex-1">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    navigate(`/shop?category=${product.category || 'General'}`);
-                                                }}
-                                                className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 hover:text-primary transition-colors w-max relative z-20"
-                                            >
-                                                {product.category || 'General'}
-                                            </button>
-                                            <h3 className="text-lg font-bold text-secondary leading-tight mb-2 group-hover:text-primary transition-colors">
-                                                {product.name}
-                                            </h3>
-                                            <div className="mt-auto flex items-center justify-between">
-                                                <div className="flex flex-col">
-                                                    {product.discount > 0 && (
-                                                        <span className="text-gray-400 text-xs line-through">
-                                                            ${product.price.toLocaleString()}
-                                                        </span>
-                                                    )}
-                                                    <span className="text-xl font-display font-black text-primary-dark">
-                                                        ${(product.price * (1 - (product.discount || 0) / 100)).toLocaleString()}
-                                                    </span>
-                                                </div>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        // Toggle favorite logic if needed
-                                                    }}
-                                                    className="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors"
-                                                >
-                                                    <Heart className="w-5 h-5" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <ProductCard key={product._id} product={product} />
                             ))}
                         </div>
 

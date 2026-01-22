@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import ProductCard from '../components/ui/ProductCard';
+import api from '../config/api';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Filter, ArrowRight, Heart, Sparkles, ShoppingBag } from 'lucide-react';
 import PageTransition from '../components/layout/PageTransition';
@@ -32,8 +33,8 @@ const Shop = () => {
                 if (searchParam) setSearchTerm(searchParam);
 
                 const [prodRes, catRes] = await Promise.all([
-                    axios.get('http://localhost:5000/api/products'),
-                    axios.get('http://localhost:5000/api/categories')
+                    api.get('/products'),
+                    api.get('/categories')
                 ]);
 
                 setProducts(prodRes.data);
@@ -145,69 +146,7 @@ const Shop = () => {
                             ) : filteredProducts.length > 0 ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
                                     {filteredProducts.map(product => (
-                                        <div
-                                            key={product._id}
-                                            className="group block cursor-pointer"
-                                            onClick={() => navigate(`/product/${product._id}`)}
-                                        >
-                                            <div className="card-kawaii h-full flex flex-col relative">
-                                                <div className="relative aspect-square overflow-hidden bg-gray-50 p-4 rounded-b-3xl">
-                                                    {product.discount > 0 && (
-                                                        <span className="absolute top-4 right-4 bg-primary text-white text-xs px-3 py-1 rounded-full shadow-sm z-10 rotate-3">
-                                                            -{product.discount}%
-                                                        </span>
-                                                    )}
-                                                    <img
-                                                        src={product.image}
-                                                        alt={product.name}
-                                                        className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-500"
-                                                    />
-                                                </div>
-                                                <div className="p-6">
-                                                    <div className="flex justify-between items-start mb-2">
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                e.stopPropagation();
-                                                                setSelectedCategory(product.category);
-                                                            }}
-                                                            className="inline-block bg-pink-50 px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-wider text-primary border border-pink-100 hover:bg-primary hover:text-white transition-colors relative z-20"
-                                                        >
-                                                            {product.category}
-                                                        </button>
-                                                        {product.stock <= 5 && product.stock > 0 && (
-                                                            <span className="text-[10px] font-bold text-red-400 uppercase flex items-center bg-red-50 px-2 py-0.5 rounded-full">
-                                                                ¡Últimos!
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <h3 className="text-lg text-white mb-1 truncate group-hover:text-white transition-colors" title={product.name}>{product.name}</h3>
-                                                    <div className="flex justify-between items-end mt-4">
-                                                        <div className="flex flex-col">
-                                                            {product.discount > 0 && (
-                                                                <span className="text-secondary text-xs font-semibold hidden md:block">
-                                                                    Antes ${product.price.toLocaleString()}
-                                                                </span>
-                                                            )}
-                                                            <span className="text-2xl font-display text-primary px-2 bg-white rounded-full group-hover:scale-105 transition-transform duration-500">
-                                                                ${(product.price * (1 - (product.discount || 0) / 100)).toLocaleString()}
-                                                            </span>
-                                                        </div>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                e.stopPropagation();
-                                                                addToCart(product);
-                                                                setIsCartOpen(true);
-                                                            }}
-                                                            className="w-10 h-10 rounded-full bg-secondary text-white flex items-center justify-center group-hover:bg-white group-hover:text-secondary transition-colors shadow-lg transform group-hover:scale-110 relative z-20"
-                                                        >
-                                                            <ShoppingBag className="w-5 h-5" />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <ProductCard key={product._id} product={product} />
                                     ))}
                                 </div>
                             ) : (

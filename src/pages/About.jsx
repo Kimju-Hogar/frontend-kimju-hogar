@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import PageTransition from '../components/layout/PageTransition';
 import { ArrowRight, Star, Heart, Sparkles, Coffee, Gift, Crown, Smile } from 'lucide-react';
+import logoKimju from "../assets/kimju-hogar-logo.jpg";
+
 
 const About = () => {
     // Animation Variants
@@ -166,7 +168,7 @@ const About = () => {
                                 className="aspect-[4/4] bg-white border-[8px] border-white rounded-[4rem] shadow-2xl overflow-hidden relative z-10"
                             >
                                 <img
-                                    src="/src/assets/kimju-hogar-logo.jpg"
+                                    src={logoKimju}
                                     alt="About Kimju"
                                     className="w-full h-full object-cover scale-105 hover:scale-110 transition-transform duration-1000"
                                 />

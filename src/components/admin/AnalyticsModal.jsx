@@ -83,7 +83,7 @@ const AnalyticsModal = ({ isOpen, onClose, data, products, orders, dateRange, on
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                     <div className="bg-pink-50/30 p-8 rounded-3xl border border-pink-50">
                         <h3 className="font-bold text-secondary mb-6 flex items-center gap-2"><ImageIcon className="w-5 h-5 text-primary" /> Distribución por Categoría</h3>
-                        <div className="h-64">
+                        <div className="h-64" style={{ minWidth: 0, minHeight: 0 }}>
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie data={pieData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
@@ -98,7 +98,7 @@ const AnalyticsModal = ({ isOpen, onClose, data, products, orders, dateRange, on
 
                     <div className="bg-purple-50/30 p-8 rounded-3xl border border-purple-50">
                         <h3 className="font-bold text-secondary mb-6 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-purple-400" /> Crecimiento de Usuarios</h3>
-                        <div className="h-64">
+                        <div className="h-64" style={{ minWidth: 0, minHeight: 0 }}>
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={data}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} />

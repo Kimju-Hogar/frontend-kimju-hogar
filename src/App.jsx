@@ -1,27 +1,28 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
 
-// Pages
-import Home from './pages/Home';
-import Shop from './pages/Shop';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ProductDetail from './pages/ProductDetail';
-import UserProfile from './pages/UserProfile';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import AdminDashboard from './pages/AdminDashboard';
+// Lazy load Pages
+const Home = lazy(() => import('./pages/Home'));
+const Shop = lazy(() => import('./pages/Shop'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ProductDetail = lazy(() => import('./pages/ProductDetail'));
+const UserProfile = lazy(() => import('./pages/UserProfile'));
+const About = lazy(() => import('./pages/About'));
+const Contact = lazy(() => import('./pages/Contact'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import Terms from './pages/Terms';
-import Privacy from './pages/Privacy';
-import ForgotPassword from './pages/auth/ForgotPassword';
-import ResetPassword from './pages/auth/ResetPassword';
-import OrderSuccess from './pages/OrderSuccess';
-import OrderFailure from './pages/OrderFailure';
-import OrderPending from './pages/OrderPending';
-import FAQ from './pages/FAQ';
-import NotFound from './pages/NotFound';
+const Cart = lazy(() => import('./pages/Cart'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const Terms = lazy(() => import('./pages/Terms'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
+const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
+const OrderFailure = lazy(() => import('./pages/OrderFailure'));
+const OrderPending = lazy(() => import('./pages/OrderPending'));
+const FAQ = lazy(() => import('./pages/FAQ'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Layout & components
 import Navbar from './components/layout/Navbar';
@@ -39,6 +40,13 @@ import { HelmetProvider } from 'react-helmet-async';
 
 import { ToastProvider } from './context/ToastContext';
 
+// Loading Component
+const PageLoader = () => (
+    <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+    </div>
+);
+
 function App() {
     return (
         <HelmetProvider>
@@ -52,35 +60,37 @@ function App() {
                                 <Navbar />
 
                                 <main className="flex-grow">
-                                    <PageTransition>
-                                        <Routes>
-                                            <Route path="/" element={<Home />} />
-                                            <Route path="/shop" element={<Shop />} />
-                                            <Route path="/product/:id" element={<ProductDetail />} />
-                                            <Route path="/login" element={<Login />} />
-                                            <Route path="/register" element={<Register />} />
-                                            <Route path="/forgot-password" element={<ForgotPassword />} />
-                                            <Route path="/reset-password/:token" element={<ResetPassword />} />
-                                            <Route path="/about" element={<About />} />
-                                            <Route path="/contact" element={<Contact />} />
-                                            <Route path="/terms" element={<Terms />} />
-                                            <Route path="/privacy" element={<Privacy />} />
+                                    <Suspense fallback={<PageLoader />}>
+                                        <PageTransition>
+                                            <Routes>
+                                                <Route path="/" element={<Home />} />
+                                                <Route path="/shop" element={<Shop />} />
+                                                <Route path="/product/:id" element={<ProductDetail />} />
+                                                <Route path="/login" element={<Login />} />
+                                                <Route path="/register" element={<Register />} />
+                                                <Route path="/forgot-password" element={<ForgotPassword />} />
+                                                <Route path="/reset-password/:token" element={<ResetPassword />} />
+                                                <Route path="/about" element={<About />} />
+                                                <Route path="/contact" element={<Contact />} />
+                                                <Route path="/terms" element={<Terms />} />
+                                                <Route path="/privacy" element={<Privacy />} />
 
-                                            {/* Protected Routes */}
-                                            <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-                                            <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-                                            <Route path="/order/:id/success" element={<OrderSuccess />} />
-                                            <Route path="/order/:id/failure" element={<OrderFailure />} />
-                                            <Route path="/order/:id/pending" element={<OrderPending />} />
-                                            <Route path="/cart" element={<Cart />} />
-                                            <Route element={<AdminRoute />}>
-                                                <Route path="/admin" element={<AdminDashboard />} />
-                                            </Route>
+                                                {/* Protected Routes */}
+                                                <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+                                                <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+                                                <Route path="/order/:id/success" element={<OrderSuccess />} />
+                                                <Route path="/order/:id/failure" element={<OrderFailure />} />
+                                                <Route path="/order/:id/pending" element={<OrderPending />} />
+                                                <Route path="/cart" element={<Cart />} />
+                                                <Route element={<AdminRoute />}>
+                                                    <Route path="/admin" element={<AdminDashboard />} />
+                                                </Route>
 
-                                            <Route path="/faq" element={<FAQ />} />
-                                            <Route path="*" element={<NotFound />} />
-                                        </Routes>
-                                    </PageTransition>
+                                                <Route path="/faq" element={<FAQ />} />
+                                                <Route path="*" element={<NotFound />} />
+                                            </Routes>
+                                        </PageTransition>
+                                    </Suspense>
                                 </main>
 
                                 <WhatsAppButton />

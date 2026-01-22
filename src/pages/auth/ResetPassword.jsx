@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../config/api';
 import { Lock, ArrowRight, CheckCircle } from 'lucide-react';
 import PageTransition from '../../components/layout/PageTransition';
 import SEO from '../../components/common/SEO';
@@ -25,7 +25,7 @@ const ResetPassword = () => {
         setLoading(true);
 
         try {
-            await axios.put(`http://localhost:5000/api/auth/reset-password/${token}`, { password });
+            await api.put(`/auth/reset-password/${token}`, { password });
             setMessage({ type: 'success', text: '¡Contraseña actualizada con éxito! 🎉' });
             setTimeout(() => navigate('/login'), 2000);
         } catch (err) {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../config/api';
 import { Facebook, Instagram, Twitter, MessageCircle, Heart, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
 import logo from '../../assets/kimju-hogar-logo.jpg';
@@ -12,7 +12,7 @@ const Footer = () => {
     const handleSubscribe = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('http://localhost:5000/api/newsletter', { email });
+            const res = await api.post('/newsletter', { email });
             setMsg(res.data.msg);
             setEmail('');
             setTimeout(() => setMsg(''), 5000);

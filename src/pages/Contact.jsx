@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send, MessageCircle } from 'lucide-react';
-import axios from 'axios';
+import api from '../config/api';
 import PageTransition from '../components/layout/PageTransition';
 
 const Contact = () => {
@@ -15,7 +15,7 @@ const Contact = () => {
         e.preventDefault();
         setStatus('sending');
         try {
-            await axios.post('http://localhost:5000/api/contact', {
+            await api.post('/contact', {
                 name: `${formData.name} ${formData.lastName}`,
                 email: formData.email,
                 message: formData.message

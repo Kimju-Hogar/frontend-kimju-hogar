@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/api';
 import { ShoppingBag, Star, Truck, ArrowLeft, Minus, Plus, Heart, Check, Sparkles } from 'lucide-react';
 import PageTransition from '../components/layout/PageTransition';
 import { useCart } from '../context/CartContext';
@@ -22,7 +22,7 @@ const ProductDetail = () => {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const res = await axios.get(`http://localhost:5000/api/products/${id}`);
+                const res = await api.get(`/products/${id}`);
                 setProduct(res.data);
                 // Pre-select first variation if exists
                 if (res.data.variations && res.data.variations.length > 0) {
@@ -32,14 +32,12 @@ const ProductDetail = () => {
                 // Check if favorite (simplistic check if user is logged in)
                 const token = localStorage.getItem('token');
                 if (token) {
-                    const profileRes = await axios.get('http://localhost:5000/api/users/profile', {
-                        headers: { 'x-auth-token': token }
-                    });
+                    const profileRes = await api.get('/users/profile');
                     setIsFavorite(profileRes.data.favorites?.includes(id));
                 }
 
                 // Fetch similar products
-                const similarRes = await axios.get(`http://localhost:5000/api/products/${id}/similar`);
+                const similarRes = await api.get(`/products/${id}/similar`);
                 setSimilarProducts(similarRes.data);
             } catch (err) {
                 console.error("Error fetching product details", err);
@@ -57,9 +55,7 @@ const ProductDetail = () => {
             return;
         }
         try {
-            await axios.post(`http://localhost:5000/api/users/favorites/${id}`, {}, {
-                headers: { 'x-auth-token': token }
-            });
+            await api.post(`/users/favorites/${id}`, {});
             setIsFavorite(!isFavorite);
         } catch (err) {
             console.error("Error toggling favorite", err);
@@ -121,6 +117,8 @@ const ProductDetail = () => {
                                     src={currentImage}
                                     alt={product.name}
                                     className="w-full h-full object-contain hover:scale-105 transition-transform duration-500"
+                                    width="600"
+                                    height="600"
                                 />
                                 {product.discount > 0 && (
                                     <span className="absolute top-6 left-6 bg-primary text-white border-2 border-white px-4 py-2 text-sm font-bold rounded-full shadow-lg z-10 animate-bounce-slow">
@@ -138,7 +136,7 @@ const ProductDetail = () => {
                                             onClick={() => setActiveImg(idx)}
                                             className={`w-20 h-20 bg-white border-2 rounded-2xl p-2 cursor-pointer transition-all ${activeImg === idx ? 'border-primary shadow-lg scale-110' : 'border-gray-100 hover:border-pink-200'}`}
                                         >
-                                            <img src={img} className="w-full h-full object-contain rounded-lg" />
+                                            <img src={img} className="w-full h-full object-contain rounded-lg" loading="lazy" width="80" height="80" />
                                         </button>
                                     ))}
                                 </div>
@@ -258,7 +256,14 @@ const ProductDetail = () => {
                                     <Link to={`/product/${p._id}`} key={p._id} className="group block">
                                         <div className="bg-white border-2 border-pink-50 rounded-3xl p-4 hover:border-primary hover:shadow-xl transition-all h-full flex flex-col">
                                             <div className="aspect-square rounded-2xl overflow-hidden mb-4 bg-gray-50">
-                                                <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                                                <img
+                                                    src={p.image}
+                                                    alt={p.name}
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                                    loading="lazy"
+                                                    width="300"
+                                                    height="300"
+                                                />
                                             </div>
                                             <h3 className="font-bold text-secondary text-sm group-hover:text-primary truncate mb-2">{p.name}</h3>
                                             <p className="text-primary-dark font-black mt-auto">

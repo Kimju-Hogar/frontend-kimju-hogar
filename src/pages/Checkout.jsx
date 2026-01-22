@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/api';
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -103,16 +103,11 @@ const Checkout = () => {
                 totalPrice: getCartTotal()
             };
 
-            const token = localStorage.getItem('token');
-            const { data: createdOrder } = await axios.post('http://localhost:5000/api/orders', orderData, {
-                headers: { 'x-auth-token': token }
-            });
+            const { data: createdOrder } = await api.post('/orders', orderData);
 
             // 2. Create Payment Preference
-            const { data: preference } = await axios.post('http://localhost:5000/api/payments/create_preference', {
+            const { data: preference } = await api.post('/payments/create_preference', {
                 orderId: createdOrder._id
-            }, {
-                headers: { 'x-auth-token': token }
             });
 
             if (preference && preference.id) {

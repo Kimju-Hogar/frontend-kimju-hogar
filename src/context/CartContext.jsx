@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useContext, useRef } from 'react';
-import axios from 'axios';
+import api from '../config/api';
 import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
@@ -37,10 +37,8 @@ export const CartProvider = ({ children }) => {
                 setIsFetching(true);
                 try {
                     const token = localStorage.getItem('token');
-                    // Use configured axios instance or base URL if possible, otherwise hardcoded for now
-                    const { data: remoteCart } = await axios.get('http://localhost:5000/api/users/cart', {
-                        headers: { 'x-auth-token': token }
-                    });
+                    // Use configured axios instance or base URL if possible
+                    const { data: remoteCart } = await api.get('/users/cart');
 
                     // Logic: 
                     // If 'just_logged_in' is true -> this is a fresh login, so we MERGE guest cart with remote cart.
@@ -118,9 +116,7 @@ export const CartProvider = ({ children }) => {
                         quantity: item.quantity,
                         selectedVariation: item.selectedVariation
                     }));
-                    await axios.post('http://localhost:5000/api/users/cart', { cart: cartData }, {
-                        headers: { 'x-auth-token': token }
-                    });
+                    await api.post('/users/cart', { cart: cartData });
                 } catch (error) {
                     console.error("Error syncing cart to backend", error);
                 }

@@ -17,7 +17,7 @@ const OverviewTab = ({ stats, data, productAnalysis, onShowAnalytics }) => (
                 <h3 className="font-bold text-lg mb-6 text-secondary flex items-center gap-2">
                     <Heart className="w-5 h-5 text-primary fill-pink-200" /> Ventas Mensuales (Info Real)
                 </h3>
-                <div className="h-72 w-full">
+                <div className="h-72 w-full" style={{ minWidth: 0, minHeight: 0 }}>
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={data}>
                             <defs>

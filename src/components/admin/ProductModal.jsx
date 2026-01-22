@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 
 const ProductModal = ({
     showProductModal, setShowProductModal, productMode, handleProductSubmit,
-    productForm, setProductForm, handleImageUpload, categories
+    productForm, setProductForm, handleImageUpload, handleMultiImageUpload, categories
 }) => {
     if (!showProductModal) return null;
 
@@ -61,7 +61,7 @@ const ProductModal = ({
                     </div>
 
                     <div className="space-y-1">
-                        <label className="text-xs font-bold text-gray-400 ml-2">Imagen</label>
+                        <label className="text-xs font-bold text-gray-400 ml-2">Imagen Principal</label>
                         <div className="flex gap-2 items-center">
                             <input type="text" placeholder="URL de la imagen" value={productForm.image} onChange={e => setProductForm({ ...productForm, image: e.target.value })} className="flex-1 bg-gray-50 border border-gray-200 rounded-xl p-3 font-bold text-gray-600 focus:bg-white focus:border-primary focus:outline-none transition-all" />
                             <label className="bg-pink-50 px-4 py-3 cursor-pointer rounded-xl font-bold uppercase text-xs text-primary hover:bg-pink-100 transition-colors">
@@ -74,6 +74,46 @@ const ProductModal = ({
                             <img src={productForm.image} className="w-full h-full object-cover" />
                         </div>
                     )}
+
+                    {/* Galería de Imágenes */}
+                    <div className="space-y-1 border-t border-gray-100 pt-4 mt-4">
+                        <label className="text-xs font-bold text-gray-400 ml-2">Galería de Imágenes (Opcional)</label>
+                        <div className="flex gap-2 items-center mb-2">
+                            <label className="bg-purple-50 px-4 py-3 cursor-pointer rounded-xl font-bold uppercase text-xs text-purple-600 hover:bg-purple-100 transition-colors w-full text-center">
+                                + Añadir Imágenes
+                                <input
+                                    type="file"
+                                    multiple
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files.length > 0) {
+                                            handleMultiImageUpload(e.target.files);
+                                        }
+                                    }}
+                                    className="hidden"
+                                />
+                            </label>
+                        </div>
+
+                        {productForm.images && productForm.images.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {productForm.images.map((img, idx) => (
+                                    <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 group">
+                                        <img src={img} className="w-full h-full object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const newImages = productForm.images.filter((_, i) => i !== idx);
+                                                setProductForm({ ...productForm, images: newImages });
+                                            }}
+                                            className="absolute top-0 right-0 bg-red-500 text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
                     <button type="submit" className="w-full bg-secondary text-white p-4 rounded-xl font-bold text-lg hover:bg-primary transition-all shadow-lg hover:shadow-xl hover:-translate-y-1">
                         {productMode === 'create' ? 'Crear Producto' : 'Guardar Cambios'}

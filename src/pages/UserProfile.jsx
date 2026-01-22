@@ -7,7 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageTransition from '../components/layout/PageTransition';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../config/api';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import AutocompleteField from '../components/common/AutocompleteField';
@@ -94,10 +94,7 @@ const UserProfile = () => {
             const fetchFavorites = async () => {
                 setFavsLoading(true);
                 try {
-                    const token = localStorage.getItem('token');
-                    const res = await axios.get('http://localhost:5000/api/users/favorites', {
-                        headers: { 'x-auth-token': token }
-                    });
+                    const res = await api.get('/users/favorites');
                     setFavorites(res.data);
                 } catch (err) {
                     console.error("Error fetching favorites", err);
@@ -112,10 +109,7 @@ const UserProfile = () => {
             const fetchOrders = async () => {
                 setOrdersLoading(true);
                 try {
-                    const token = localStorage.getItem('token');
-                    const res = await axios.get('http://localhost:5000/api/orders/myorders', {
-                        headers: { 'x-auth-token': token }
-                    });
+                    const res = await api.get('/orders/myorders');
                     setOrders(res.data);
                 } catch (err) {
                     console.error("Error fetching orders", err);
@@ -144,10 +138,7 @@ const UserProfile = () => {
         }
 
         try {
-            const token = localStorage.getItem('token');
-            const res = await axios.put('http://localhost:5000/api/users/profile', formData, {
-                headers: { 'x-auth-token': token }
-            });
+            const res = await api.put('/users/profile', formData);
             setMessage({ type: 'success', text: 'Perfil actualizado correctamente' });
 
             // Safe refresh
@@ -166,9 +157,7 @@ const UserProfile = () => {
 
     const deleteAccount = async () => {
         try {
-            await axios.delete('http://localhost:5000/api/users/profile', {
-                headers: { 'x-auth-token': localStorage.getItem('token') }
-            });
+            await api.delete('/users/profile');
             localStorage.removeItem('token');
             window.location.href = '/login';
         } catch (err) {
@@ -182,16 +171,13 @@ const UserProfile = () => {
         setAddressLoading(true);
         setMessage({ type: '', text: '' });
         try {
-            const token = localStorage.getItem('token');
-            const config = { headers: { 'x-auth-token': token } };
-
             if (editingAddressId) {
                 // Update existing
-                await axios.put(`http://localhost:5000/api/users/address/${editingAddressId}`, addressForm, config);
+                await api.put(`/users/address/${editingAddressId}`, addressForm);
                 setMessage({ type: 'success', text: 'Dirección actualizada correctamente' });
             } else {
                 // Create new
-                await axios.post('http://localhost:5000/api/users/address', addressForm, config);
+                await api.post('/users/address', addressForm);
                 setMessage({ type: 'success', text: 'Dirección agregada correctamente' });
             }
 
@@ -229,10 +215,7 @@ const UserProfile = () => {
         if (!window.confirm('¿Estás seguro de que quieres eliminar esta dirección?')) return;
         setAddressLoading(true);
         try {
-            const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:5000/api/users/address/${addressId}`, {
-                headers: { 'x-auth-token': token }
-            });
+            await api.delete(`/users/address/${addressId}`);
             await refreshUser();
             setMessage({ type: 'success', text: 'Dirección eliminada correctamente' });
         } catch (err) {
@@ -418,10 +401,7 @@ const UserProfile = () => {
                                                             <button
                                                                 onClick={async (e) => {
                                                                     e.preventDefault();
-                                                                    const token = localStorage.getItem('token');
-                                                                    await axios.post(`http://localhost:5000/api/users/favorites/${product._id}`, {}, {
-                                                                        headers: { 'x-auth-token': token }
-                                                                    });
+                                                                    await api.post(`/users/favorites/${product._id}`, {});
                                                                     setFavorites(favorites.filter(f => f._id !== product._id));
                                                                 }}
                                                                 className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-2 rounded-full text-red-400 hover:bg-red-400 hover:text-white transition-all shadow-sm"

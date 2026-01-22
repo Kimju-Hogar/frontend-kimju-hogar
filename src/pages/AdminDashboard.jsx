@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+
 import { Star, LogOut, Package, TrendingUp, DollarSign, Users, Heart, ShoppingBag, Coffee, Smartphone, Zap, Truck, Shield, AlertTriangle, Sparkles, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageTransition from '../components/layout/PageTransition';
 import { useAuth } from '../context/AuthContext';
+import api from '../config/api';
+
 
 // Import Admin Components
 import OverviewTab from '../components/admin/OverviewTab';
@@ -66,7 +68,7 @@ const AdminDashboard = () => {
 
     // Product Form State
     const [productForm, setProductForm] = useState({
-        name: '', price: '', category: '', stock: '', description: '', discount: '', image: '', variations: ''
+        name: '', price: '', category: '', stock: '', description: '', discount: '', image: '', images: [], variations: ''
     });
 
     // Modal States
@@ -81,21 +83,15 @@ const AdminDashboard = () => {
         end: new Date().toISOString().split('T')[0]
     });
 
-    const api = axios.create({
-        baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
-    });
 
     const fetchData = async () => {
         setIsLoadingData(true);
         try {
-            const token = localStorage.getItem('token');
-            const config = { headers: { 'x-auth-token': token } };
-
             const [productsRes, usersRes, ordersRes, categoriesRes] = await Promise.all([
-                api.get('/products?includeOutOfStock=true', config),
-                api.get('/users', config),
-                api.get('/orders', config),
-                api.get('/categories', config)
+                api.get('/products?includeOutOfStock=true'),
+                api.get('/users'),
+                api.get('/orders'),
+                api.get('/categories')
             ]);
 
             setProducts(productsRes.data);
@@ -166,14 +162,10 @@ const AdminDashboard = () => {
         e.preventDefault();
         if (!newCategory.trim()) return alert("Nombre obligatorio");
         try {
-            const token = localStorage.getItem('token');
-            const payload = { name: newCategory.trim(), image: newCategoryImage, icon: newCategoryIcon };
-            const config = { headers: { 'x-auth-token': token } };
-
             if (categoryMode === 'create') {
-                await api.post('/categories', payload, config);
+                await api.post('/categories', payload);
             } else {
-                await api.put(`/categories/${editingCategory._id}`, payload, config);
+                await api.put(`/categories/${editingCategory._id}`, payload);
                 setCategoryMode('create');
                 setEditingCategory(null);
             }
@@ -185,8 +177,7 @@ const AdminDashboard = () => {
     const handleDeleteCategory = async (id) => {
         if (!window.confirm("¿Borrar categoría?")) return;
         try {
-            const token = localStorage.getItem('token');
-            await api.delete(`/categories/${id}`, { headers: { 'x-auth-token': token } });
+            await api.delete(`/categories/${id}`);
             fetchData();
         } catch (err) { alert('Error borrando categoría'); }
     };
@@ -194,8 +185,7 @@ const AdminDashboard = () => {
     const handleDeleteProduct = async (id) => {
         if (!window.confirm("¿Eliminar producto?")) return;
         try {
-            const token = localStorage.getItem('token');
-            await api.delete(`/products/${id}`, { headers: { 'x-auth-token': token } });
+            await api.delete(`/products/${id}`);
             fetchData();
         } catch (err) { alert("Error al eliminar"); }
     };
@@ -203,8 +193,7 @@ const AdminDashboard = () => {
     const handleDeleteUser = async (id) => {
         if (!window.confirm("¿Eliminar usuario?")) return;
         try {
-            const token = localStorage.getItem('token');
-            await api.delete(`/users/${id}`, { headers: { 'x-auth-token': token } });
+            await api.delete(`/users/${id}`);
             fetchData();
         } catch (err) { alert("Error al eliminar"); }
     };
@@ -215,8 +204,7 @@ const AdminDashboard = () => {
         formData.append('file', file);
         setUploadStatus('uploading');
         try {
-            const token = localStorage.getItem('token');
-            const res = await api.post('/products/batch', formData, { headers: { 'x-auth-token': token } });
+            const res = await api.post('/products/batch', formData);
             setUploadStatus('success');
             setUploadMsg(res.data.msg);
             fetchData();
@@ -229,19 +217,16 @@ const AdminDashboard = () => {
     const handleProductSubmit = async (e) => {
         e.preventDefault();
         try {
-            const token = localStorage.getItem('token');
-            const config = { headers: { 'x-auth-token': token } };
-
             if (productMode === 'create') {
                 const finalProduct = { ...productForm };
                 if (!finalProduct.category) finalProduct.category = 'General';
-                await api.post('/products', finalProduct, config);
+                await api.post('/products', finalProduct);
             } else {
-                await api.put(`/products/${productForm._id}`, productForm, config);
+                await api.put(`/products/${productForm._id}`, productForm);
             }
 
             setShowProductModal(false);
-            setProductForm({ name: '', price: '', category: '', stock: '', description: '', discount: '', image: '', variations: '' });
+            setProductForm({ name: '', price: '', category: '', stock: '', description: '', discount: '', image: '', images: [], variations: '' });
             fetchData();
         } catch (err) {
             alert('Error al guardar producto');
@@ -259,6 +244,7 @@ const AdminDashboard = () => {
             description: product.description,
             discount: product.discount || 0,
             image: product.image,
+            images: product.images || [],
             variations: product.variations ? product.variations.join(',') : ''
         });
         setShowProductModal(true);
@@ -282,6 +268,31 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleMultiImageUpload = async (files) => {
+        const formData = new FormData();
+        for (let i = 0; i < files.length; i++) {
+            formData.append('images', files[i]);
+        }
+
+        try {
+            const res = await api.post('/upload/multiple', formData);
+            const baseUrl = import.meta.env.VITE_API_URL.replace('/api', '');
+            const newImageUrls = res.data.filePaths.map(path => `${baseUrl}${path}`);
+
+            setProductForm(prev => ({
+                ...prev,
+                images: [...(prev.images || []), ...newImageUrls]
+            }));
+        } catch (err) {
+            console.error("Multi upload error", err);
+            alert("Falló la subida de múltiples imágenes");
+        }
+    };
+
+    // Pass this handler to ProductModal via specific prop or attach to existing handleProductSubmit object if hacky, 
+    // but better to pass as prop. PROPOSAL: attach to handleProductSubmit as a property temporarily or pass new prop.
+    // Let's pass it as a new prop to ProductModal in the render.
+
     const downloadCsvTemplate = () => {
         const csvContent = "data:text/csv;charset=utf-8,name,price,category,stock,description,image\nProducto1,10000,Hogar,50,Desc,http://url.com";
         const encodedUri = encodeURI(csvContent);
@@ -294,8 +305,7 @@ const AdminDashboard = () => {
 
     const handleUpdateOrderStatus = async (orderId, status) => {
         try {
-            const token = localStorage.getItem('token');
-            await api.put(`/orders/${orderId}/status`, { status }, { headers: { 'x-auth-token': token } });
+            await api.put(`/orders/${orderId}/status`, { status });
             fetchData();
         } catch (err) { alert('Error al actualizar estado'); }
     };
@@ -303,8 +313,7 @@ const AdminDashboard = () => {
     const handleUpdateOrderPaid = async (orderId) => {
         if (!window.confirm("¿Confirmar pago manual?")) return;
         try {
-            const token = localStorage.getItem('token');
-            await api.put(`/orders/${orderId}/pay`, {}, { headers: { 'x-auth-token': token } });
+            await api.put(`/orders/${orderId}/pay`, {});
             fetchData();
         } catch (err) { alert('Error al marcar pagado'); }
     };
@@ -355,6 +364,7 @@ const AdminDashboard = () => {
 
     return (
         <PageTransition>
+            <div className='pt-22 pb-20' ></div>
             <div className="pt-24 pb-20 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 bg-white min-h-screen relative overflow-hidden">
                 {/* Background Blobs */}
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-pink-50 rounded-full blur-[120px] -z-10 opacity-60" />
@@ -478,6 +488,7 @@ const AdminDashboard = () => {
                     productForm={productForm}
                     setProductForm={setProductForm}
                     handleImageUpload={handleImageUpload}
+                    handleMultiImageUpload={handleMultiImageUpload}
                     categories={categories}
                 />
             </div>

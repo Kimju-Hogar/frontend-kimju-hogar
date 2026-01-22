@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, User, Search, Menu, X, Heart, LogOut } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../config/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -37,7 +37,7 @@ const Navbar = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/categories');
+                const res = await api.get('/categories');
                 setCategories(res.data);
             } catch (err) { console.error(err); }
         };
@@ -50,7 +50,7 @@ const Navbar = () => {
 
         if (value.length > 2) {
             try {
-                const res = await axios.get(`http://localhost:5000/api/products?search=${value}&category=${selectedCategory}`);
+                const res = await api.get(`/products?search=${value}&category=${selectedCategory}`);
                 setSuggestions(res.data.slice(0, 5));
                 setShowSuggestions(true);
             } catch (err) { console.error(err); }
@@ -99,7 +99,7 @@ const Navbar = () => {
                                 whileHover={{ rotate: 10, scale: 1.1 }}
                                 className="relative"
                             >
-                                <img src={logo} alt="Kimju Hogar" className="h-12 w-12 object-cover rounded-full border-2 border-primary shadow-lg" />
+                                <img src={logo} alt="Kimju Hogar" className="h-12 w-12 object-cover rounded-full border-2 border-primary shadow-lg" width="48" height="48" />
                                 <span className="absolute -top-1 -right-1 text-xl">✨</span>
                             </motion.div>
                             <span className="text-2xl font-display font-black tracking-tight text-primary-dark group-hover:text-primary transition-colors">
@@ -172,7 +172,14 @@ const Navbar = () => {
                                                         onClick={() => setShowSuggestions(false)}
                                                         className="flex items-center gap-3 p-3 hover:bg-pink-50 rounded-xl transition-colors group"
                                                     >
-                                                        <img src={s.image} className="w-10 h-10 object-cover rounded-lg shadow-sm" alt={s.name} />
+                                                        <img
+                                                            src={s.image}
+                                                            className="w-10 h-10 object-cover rounded-lg shadow-sm"
+                                                            alt={s.name}
+                                                            width="40"
+                                                            height="40"
+                                                            loading="lazy"
+                                                        />
                                                         <div>
                                                             <p className="text-sm font-bold text-secondary group-hover:text-primary transition-colors">{s.name}</p>
                                                             <p className="text-[10px] text-gray-400 font-medium">${s.price.toLocaleString()}</p>

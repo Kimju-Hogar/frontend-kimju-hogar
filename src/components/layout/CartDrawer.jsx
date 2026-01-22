@@ -59,7 +59,14 @@ const CartDrawer = () => {
                                 cart.map((item, idx) => (
                                     <div key={`${item._id}-${item.selectedVariation}`} className="flex gap-4 group">
                                         <div className="w-24 h-24 bg-gray-50 rounded-2xl overflow-hidden border border-pink-50 flex-shrink-0">
-                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                                            <img
+                                                src={item.image}
+                                                alt={item.name}
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                                width="96"
+                                                height="96"
+                                                loading="lazy"
+                                            />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-start mb-1">
