@@ -1,38 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../config/api';
-import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import PageTransition from '../components/layout/PageTransition';
 import AutocompleteField from '../components/common/AutocompleteField';
 import colombiaData from '../utils/colombia.json';
-import { CreditCard, Truck, ShieldCheck, Heart, ShoppingBag, MapPin, Check, Sparkles, Star, Shield } from 'lucide-react';
-
-// Initialize MP with your public key
-const MP_KEY = import.meta.env.VITE_MERCADOPAGO_KEY || 'TEST-5afed917-c538-47b2-9999-7acda2635a26';
-initMercadoPago(MP_KEY, {
-    locale: 'es-CO'
-});
+import { CreditCard, Truck, ShieldCheck, Heart, ShoppingBag, MapPin, Check, ExternalLink } from 'lucide-react';
 
 const Checkout = () => {
     const { cart, getCartTotal, clearCart } = useCart();
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [preferenceId, setPreferenceId] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [mpReady, setMpReady] = useState(false);
-
-    useEffect(() => {
-        if (preferenceId) {
-            setTimeout(() => {
-                const element = document.getElementById('mercadopago-button-container');
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }, 500);
-        }
-    }, [preferenceId]);
 
     const [formData, setFormData] = useState({
         fullName: user?.name || '',
@@ -48,7 +28,6 @@ const Checkout = () => {
 
     const handleSelectAddress = (addr, index) => {
         if (selectedAddressIndex === index) {
-            // Deselect/Unmark
             setSelectedAddressIndex(null);
             setFormData({
                 ...formData,
@@ -57,7 +36,6 @@ const Checkout = () => {
                 state: '',
             });
         } else {
-            // Select/Mark
             setFormData({
                 ...formData,
                 address: addr.street,
@@ -71,7 +49,7 @@ const Checkout = () => {
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-        setSelectedAddressIndex(null); // Reset selection if manually typing
+        setSelectedAddressIndex(null);
     };
 
     const handleSubmit = async (e) => {
@@ -79,7 +57,7 @@ const Checkout = () => {
         setLoading(true);
 
         try {
-            // 1. Create Order in Backend
+            // 1. Create Order in Backend (Pending status)
             const orderData = {
                 orderItems: cart.map(item => ({
                     product: item._id,
@@ -96,7 +74,7 @@ const Checkout = () => {
                     country: 'Colombia',
                     additionalInfo: formData.additionalInfo
                 },
-                paymentMethod: 'Mercado Pago',
+                paymentMethod: 'Wompi',
                 itemsPrice: getCartTotal(),
                 taxPrice: 0,
                 shippingPrice: 0,
@@ -104,26 +82,53 @@ const Checkout = () => {
             };
 
             const { data: createdOrder } = await api.post('/orders', orderData);
+            const orderId = createdOrder._id;
 
-            // 2. Create Payment Preference
-            const { data: preference } = await api.post('/payments/create_preference', {
-                orderId: createdOrder._id
+            // 2. Get Signature for Wompi
+            const { data: signatureData } = await api.post('/payments/signature', {
+                orderId: orderId,
+                amount: getCartTotal()
             });
 
-            if (preference && preference.id) {
-                setPreferenceId(preference.id);
-            } else {
-                throw new Error('No preference ID received from server');
-            }
+            // 3. Open Wompi Widget
+            const checkoutOptions = {
+                currency: 'COP',
+                amountInCents: signatureData.amountInCents,
+                reference: signatureData.reference,
+                publicKey: signatureData.publicKey,
+                signature: { integrity: signatureData.signature },
+                redirectUrl: `${window.location.origin}/order/${orderId}/pending`, // Redirect to verification page
+                customerData: {
+                    email: formData.email,
+                    fullName: formData.fullName,
+                    phoneNumber: formData.phone,
+                    phoneNumberPrefix: '+57',
+                    legalId: '', // Optional
+                    legalIdType: 'CC' // Optional
+                },
+                shippingAddress: {
+                    addressLine1: formData.address,
+                    city: formData.city,
+                    phoneNumber: formData.phone,
+                    region: formData.state,
+                    country: 'CO'
+                }
+            };
+
+            const checkout = new window.WidgetCheckout(checkoutOptions);
+
+            checkout.open((result) => {
+                const transactionId = result.transaction.id;
+                console.log("Transaction ID:", transactionId);
+                // The widget might redirect automatically, but if simply closed or handled inline:
+                if (result.status === 'APPROVED') {
+                    navigate(`/order/${orderId}/success`);
+                }
+            });
+
         } catch (error) {
             console.error('Checkout error:', error);
-            if (error.response && error.response.status === 400 && error.response.data.msg) {
-                alert(`Error: ${error.response.data.msg}`);
-                // Optional: Redirect to cart to fix the issue
-                // navigate('/cart');
-            } else {
-                alert('Hubo un error al procesar tu orden. Por favor intenta de nuevo.');
-            }
+            alert('Hubo un error al iniciar el pago. Por favor intenta de nuevo.');
         } finally {
             setLoading(false);
         }
@@ -158,7 +163,7 @@ const Checkout = () => {
                         </div>
 
                         {/* Saved Addresses Selection */}
-                        {user?.addresses?.length > 0 && !preferenceId && (
+                        {user?.addresses?.length > 0 && (
                             <div className="mb-8">
                                 <label className="block text-xs font-bold text-gray-400 uppercase ml-3 mb-3">Usar una dirección guardada:</label>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -195,8 +200,7 @@ const Checkout = () => {
                                     name="fullName"
                                     value={formData.fullName}
                                     onChange={handleChange}
-                                    disabled={!!preferenceId}
-                                    className="w-full bg-gray-50 border border-gray-200 p-4 rounded-2xl font-bold text-gray-600 outline-none focus:bg-white focus:border-primary transition-all placeholder:text-gray-300 shadow-sm disabled:opacity-50"
+                                    className="w-full bg-gray-50 border border-gray-200 p-4 rounded-2xl font-bold text-gray-600 outline-none focus:bg-white focus:border-primary transition-all placeholder:text-gray-300 shadow-sm"
                                     placeholder="Ej: Ana Pérez"
                                     required
                                 />
@@ -208,8 +212,7 @@ const Checkout = () => {
                                     name="email"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    disabled={!!preferenceId}
-                                    className="w-full bg-gray-50 border border-gray-200 p-4 rounded-2xl font-bold text-gray-600 outline-none focus:bg-white focus:border-primary transition-all placeholder:text-gray-300 shadow-sm disabled:opacity-50"
+                                    className="w-full bg-gray-50 border border-gray-200 p-4 rounded-2xl font-bold text-gray-600 outline-none focus:bg-white focus:border-primary transition-all placeholder:text-gray-300 shadow-sm"
                                     placeholder="tu@email.com"
                                     required
                                 />
@@ -221,8 +224,7 @@ const Checkout = () => {
                                     name="address"
                                     value={formData.address}
                                     onChange={handleChange}
-                                    disabled={!!preferenceId}
-                                    className="w-full bg-gray-50 border border-gray-200 p-4 rounded-2xl font-bold text-gray-600 outline-none focus:bg-white focus:border-primary transition-all placeholder:text-gray-300 shadow-sm disabled:opacity-50"
+                                    className="w-full bg-gray-50 border border-gray-200 p-4 rounded-2xl font-bold text-gray-600 outline-none focus:bg-white focus:border-primary transition-all placeholder:text-gray-300 shadow-sm"
                                     placeholder="Calle 123 # 45-67"
                                     required
                                 />
@@ -234,8 +236,7 @@ const Checkout = () => {
                                     name="additionalInfo"
                                     value={formData.additionalInfo}
                                     onChange={handleChange}
-                                    disabled={!!preferenceId}
-                                    className="w-full bg-gray-50 border border-gray-200 p-4 rounded-2xl font-bold text-gray-600 outline-none focus:bg-white focus:border-primary transition-all placeholder:text-gray-300 shadow-sm disabled:opacity-50"
+                                    className="w-full bg-gray-50 border border-gray-200 p-4 rounded-2xl font-bold text-gray-600 outline-none focus:bg-white focus:border-primary transition-all placeholder:text-gray-300 shadow-sm"
                                     placeholder="Apto, Torre, Conjunto, Referencia..."
                                 />
                             </div>
@@ -246,7 +247,6 @@ const Checkout = () => {
                                     value={formData.state}
                                     onChange={(val) => setFormData({ ...formData, state: val, city: '' })} // Reset city when dept changes
                                     options={colombiaData.map(d => d.departamento)}
-                                    disabled={!!preferenceId}
                                 />
                                 <AutocompleteField
                                     label="Ciudad / Municipio"
@@ -258,7 +258,6 @@ const Checkout = () => {
                                             ? (colombiaData.find(d => d.departamento === formData.state)?.ciudades || [])
                                             : colombiaData.flatMap(d => d.ciudades) // Show all if no dept
                                     }
-                                    disabled={!!preferenceId}
                                 />
                             </div>
                             <div className="space-y-1">
@@ -268,79 +267,22 @@ const Checkout = () => {
                                     name="phone"
                                     value={formData.phone}
                                     onChange={handleChange}
-                                    disabled={!!preferenceId}
-                                    className="w-full bg-gray-50 border border-gray-200 p-4 rounded-2xl font-bold text-gray-600 outline-none focus:bg-white focus:border-primary transition-all placeholder:text-gray-300 shadow-sm disabled:opacity-50"
+                                    className="w-full bg-gray-50 border border-gray-200 p-4 rounded-2xl font-bold text-gray-600 outline-none focus:bg-white focus:border-primary transition-all placeholder:text-gray-300 shadow-sm"
                                     placeholder="300 123 4567"
                                     required
                                 />
                             </div>
 
-                            {!preferenceId ? (
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="w-full bg-secondary text-white py-5 rounded-2xl font-black uppercase tracking-widest text-lg hover:bg-primary transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 mt-6 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {loading ? 'Generando Pago...' : 'Completar Orden'} <Heart className="w-5 h-5 group-hover:fill-white transition-all" />
-                                </button>
-                            ) : (
-                                <div id="mercadopago-button-container" className="mt-6 animate-fade-in-up">
-                                    <div className="grid grid-cols-2 gap-4 mb-6">
-                                        <div className="bg-pink-50/50 p-4 rounded-3xl border border-pink-100 flex flex-col items-center text-center">
-                                            <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center mb-2 shadow-sm">
-                                                <Shield className="w-5 h-5 text-primary" />
-                                            </div>
-                                            <p className="text-[10px] font-black text-secondary uppercase mb-1">Pago 100%</p>
-                                            <p className="text-[8px] font-bold text-primary tracking-widest uppercase">Encriptado</p>
-                                        </div>
-                                        <div className="bg-purple-50/50 p-4 rounded-3xl border border-purple-100 flex flex-col items-center text-center">
-                                            <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center mb-2 shadow-sm">
-                                                <Star className="w-5 h-5 text-purple-400" />
-                                            </div>
-                                            <p className="text-[10px] font-black text-secondary uppercase mb-1">Compra 100%</p>
-                                            <p className="text-[8px] font-bold text-purple-400 tracking-widest uppercase">Garantizada</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-green-50 text-green-600 p-4 rounded-2xl text-center font-bold mb-4 border border-green-100 flex items-center justify-center gap-2 relative overflow-hidden group">
-                                        <div className="absolute inset-y-0 left-0 w-1 bg-green-400 group-hover:w-full transition-all opacity-10" />
-                                        <ShieldCheck className="w-5 h-5" /> ¡Orden generada! Paga ahora:
-                                    </div>
-                                    {preferenceId && (
-                                        <div className="min-h-[150px] flex flex-col justify-center">
-                                            {!mpReady && (
-                                                <div className="flex flex-col items-center justify-center py-8 animate-pulse text-primary">
-                                                    <Sparkles className="w-6 h-6 mb-2 animate-bounce" />
-                                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Magia en proceso...</p>
-                                                </div>
-                                            )}
-                                            <Wallet
-                                                key={preferenceId}
-                                                initialization={{ preferenceId: preferenceId, redirectMode: 'modal' }}
-                                                onReady={() => {
-                                                    setMpReady(true);
-                                                }}
-                                                onError={(error) => {
-                                                    setMpReady(false);
-                                                }}
-                                            />
-                                        </div>
-                                    )}
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setPreferenceId(null);
-                                            setMpReady(false);
-                                        }}
-                                        className="w-full text-center text-xs font-bold text-gray-400 uppercase mt-4 hover:text-primary transition-colors"
-                                    >
-                                        Modificar datos de envío
-                                    </button>
-                                </div>
-                            )}
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-secondary text-white py-5 rounded-2xl font-black uppercase tracking-widest text-lg hover:bg-primary transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 mt-6 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {loading ? 'Cargando Wompi...' : 'Pagar con Wompi'} <Heart className="w-5 h-5 group-hover:fill-white transition-all" />
+                            </button>
 
                             <div className="flex items-center justify-center gap-2 text-gray-400 text-xs font-bold uppercase mt-4">
-                                <ShieldCheck className="w-4 h-4" /> Pago 100% Seguro por Mercado Pago
+                                <ShieldCheck className="w-4 h-4" /> Pago Seguro por Wompi
                             </div>
                         </form>
                     </div>

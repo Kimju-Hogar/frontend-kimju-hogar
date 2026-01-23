@@ -13,27 +13,34 @@ const OrderPending = () => {
             try {
                 const mainUrl = window.location.href;
                 const urlObj = new URL(mainUrl);
-                const paymentId = urlObj.searchParams.get("payment_id");
+                // Wompi returns ?id=TRANSACTION_ID
+                const transactionId = urlObj.searchParams.get("id");
 
                 if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) return;
 
-                // Always check status against backend
-                const res = await api.post('/payments/verify_payment', {
-                    orderId: id,
-                    paymentId: paymentId
-                });
+                if (transactionId) {
+                    console.log("Verifying Wompi Transaction:", transactionId);
+                    const res = await api.get(`/payments/verify/${transactionId}`);
+                    // Response: { status: 'APPROVED' | 'DECLINED' | 'ERROR', orderId: ..., isPaid: ... }
 
-                if (res.data.status === 'approved') {
-                    window.location.href = `/order/${id}/success`;
-                } else if (res.data.status === 'rejected') {
-                    window.location.href = `/order/${id}/failure`;
+                    if (res.data.status === 'APPROVED' || res.data.isPaid) {
+                        window.location.href = `/order/${id}/success`;
+                    } else if (res.data.status === 'DECLINED' || res.data.status === 'ERROR' || res.data.status === 'VOIDED') {
+                        window.location.href = `/order/${id}/failure`;
+                    }
+                } else {
+                    // Fallback: check order status directly just in case webhook worked
+                    const res = await api.get(`/orders/${id}`);
+                    if (res.data.isPaid) {
+                        window.location.href = `/order/${id}/success`;
+                    }
                 }
-                // If pending, stay here.
+
             } catch (err) {
                 console.error("Verification failed in pending page", err);
             }
         };
-        const interval = setInterval(checkStatus, 5000); // Check every 5s if user stays on page
+        const interval = setInterval(checkStatus, 5000); // Check every 5s
         checkStatus();
 
         return () => clearInterval(interval);
@@ -56,25 +63,25 @@ const OrderPending = () => {
                 </motion.div>
 
                 <h1 className="text-4xl md:text-5xl font-display font-black text-secondary mb-4 text-center">
-                    Pago <span className="text-yellow-500">Pendiente</span> ⏳
+                    Verificando <span className="text-yellow-500">Pago</span> ⏳
                 </h1>
                 <p className="text-gray-500 text-center max-w-lg mb-12 font-medium text-lg leading-relaxed">
-                    Estamos esperando la confirmación final para la orden <span className="font-bold">#{id ? id.slice(-6).toUpperCase() : ''}</span>. <br />
-                    Te notificaremos tan pronto como se apruebe.
+                    Estamos confirmando tu transacción con Wompi para la orden <span className="font-bold">#{id ? id.slice(-6).toUpperCase() : ''}</span>. <br />
+                    Esto solo tomará unos segundos...
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
-                    <Link
-                        to="/shop"
+                    <button
+                        onClick={() => window.location.reload()}
                         className="flex items-center justify-center gap-2 bg-secondary text-white px-8 py-4 rounded-2xl font-bold hover:bg-primary transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 active:translate-y-0"
                     >
-                        <ShoppingBag className="w-5 h-5" /> Seguir Navegando
-                    </Link>
+                        <Clock className="w-5 h-5" /> Consultar Nuevamente
+                    </button>
                     <Link
-                        to="/profile"
+                        to="/contact"
                         className="flex items-center justify-center gap-2 bg-white text-secondary border-2 border-gray-100 px-8 py-4 rounded-2xl font-bold hover:border-pink-200 hover:text-primary transition-all shadow-sm hover:-translate-y-1 active:translate-y-0"
                     >
-                        Ver Mi Pedido <ArrowRight className="w-5 h-5" />
+                        Ayuda <ArrowRight className="w-5 h-5" />
                     </Link>
                 </div>
             </div>
