@@ -99,7 +99,7 @@ const Home = () => {
                         />
 
                         {/* Buttons Overlay - Vertically Stacked, No Card Background */}
-                        <div className="absolute inset-0 flex flex-col justify-end items-center pb- sm:pb-12 md:pb-44 pointer-events-none">
+                        <div className="absolute inset-0 flex flex-col justify-end items-center pb-24 sm:pb-12 md:pb-44 pointer-events-none">
                             <div className="flex flex-col gap-3 sm:gap-4 pointer-events-auto w-full px-8 sm:px-0 sm:w-auto">
                                 <Link to="/shop" className="bg-[#F43F5E] text-white py-3 px-12 rounded-full font-bold uppercase tracking-widest hover:bg-[#BE123C] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 text-center text-sm md:text-base">
                                     Ver Colección

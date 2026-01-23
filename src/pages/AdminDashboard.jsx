@@ -161,6 +161,13 @@ const AdminDashboard = () => {
     const handleCreateCategory = async (e) => {
         e.preventDefault();
         if (!newCategory.trim()) return alert("Nombre obligatorio");
+
+        const payload = {
+            name: newCategory,
+            image: newCategoryImage,
+            icon: newCategoryIcon
+        };
+
         try {
             if (categoryMode === 'create') {
                 await api.post('/categories', payload);

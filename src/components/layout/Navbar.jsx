@@ -280,11 +280,11 @@ const Navbar = () => {
                             <div className="flex justify-center space-x-6">
                                 {user ? (
                                     <>
-                                        <Link to="/profile" onClick={() => setIsOpen(false)} className="flex flex-col items-center space-y-2 text-gray-600">
+                                        <Link to={user.role === 'admin' ? "/admin" : "/profile"} onClick={() => setIsOpen(false)} className="flex flex-col items-center space-y-2 text-gray-600">
                                             <div className="p-3 bg-pink-50 rounded-full text-primary">
                                                 <User className="w-6 h-6" />
                                             </div>
-                                            <span className="text-sm font-bold">Perfil</span>
+                                            <span className="text-sm font-bold">{user.role === 'admin' ? 'Admin' : 'Perfil'}</span>
                                         </Link>
                                         <button
                                             onClick={() => { logout(); setIsOpen(false); window.location.href = '/'; }}
