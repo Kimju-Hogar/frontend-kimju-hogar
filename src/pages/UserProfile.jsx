@@ -466,6 +466,11 @@ const UserProfile = () => {
                                                                 <span className="text-[10px] font-black text-primary/60 bg-pink-50 px-1.5 py-0.5 rounded">
                                                                     {new Date(order.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                                                                 </span>
+                                                                {order.trackingNumber && (
+                                                                    <span className="text-[10px] font-black text-white bg-secondary px-2 py-0.5 rounded ml-2 flex items-center gap-1">
+                                                                        <Package className="w-3 h-3" /> {order.trackingNumber}
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                             <p className="text-gray-500 text-sm font-medium mb-2">
                                                                 {order.orderItems.length} {order.orderItems.length === 1 ? 'producto' : 'productos'} • Total: <span className="text-primary-dark font-black">${order.totalPrice.toLocaleString()}</span>
@@ -583,6 +588,12 @@ const UserProfile = () => {
                                                             <p className="font-bold text-secondary">{selectedOrder.shippingAddress.address}</p>
                                                             <p className="text-sm text-gray-500">{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.postalCode}</p>
                                                             <p className="text-sm text-gray-500">{selectedOrder.shippingAddress.country}</p>
+                                                            {selectedOrder.trackingNumber && (
+                                                                <div className="mt-4 bg-white/50 p-3 rounded-xl border border-pink-100">
+                                                                    <p className="text-[10px] font-bold text-gray-400 uppercase">Guía de Rastreo</p>
+                                                                    <p className="font-bold text-secondary text-sm">{selectedOrder.trackingNumber}</p>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
 
@@ -782,10 +793,11 @@ const UserProfile = () => {
                                         <div>
                                             <h3 className="font-black uppercase text-blue-900 mb-2 text-sm">Transacciones Protegidas</h3>
                                             <p className="text-blue-800 text-sm leading-relaxed opacity-80 mb-4">
-                                                En <span className="font-bold">Kimju Hogar</span> utilizamos <span className="font-bold">Mercado Pago</span> para procesar todos tus pagos de forma segura.
+                                                En <span className="font-bold">Kimju Hogar</span> utilizamos <span className="font-bold">Wompi</span> para procesar todos tus pagos de forma segura.
                                             </p>
                                             <div className="flex space-x-3 grayscale opacity-60 hover:opacity-100 transition-opacity">
-                                                <img src="https://logodownload.org/wp-content/uploads/2019/06/mercado-pago-logo.png" alt="Mercado Pago" className="h-5" />
+                                                {/* <img src="WOMPI_LOGO_URL" alt="Wompi" className="h-5" /> - Add actual Wompi logo if available or text */}
+                                                <span className="font-black text-xl tracking-tight">wompi</span>
                                             </div>
                                         </div>
                                     </div>

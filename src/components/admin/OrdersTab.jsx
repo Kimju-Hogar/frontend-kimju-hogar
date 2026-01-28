@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Search, Filter, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Search, Filter, AlertTriangle, CheckCircle, Truck, MessageCircle } from 'lucide-react';
+import { sendEmail } from '../../config/api'; // Or just use href for wa
 
-const OrdersTab = ({ orders, onUpdateStatus, onUpdatePaid, onViewInvoice }) => {
+const OrdersTab = ({ orders, onUpdateStatus, onUpdatePaid, onViewInvoice, onAddTracking }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
 
@@ -40,6 +41,7 @@ const OrdersTab = ({ orders, onUpdateStatus, onUpdatePaid, onViewInvoice }) => {
                             <option value="paid">Pagados</option>
                             <option value="unpaid">No Pagados</option>
                             <option value="processing">Procesando</option>
+                            <option value="shipped">Enviado</option>
                             <option value="delivered">Entregados</option>
                         </select>
                     </div>
@@ -57,6 +59,7 @@ const OrdersTab = ({ orders, onUpdateStatus, onUpdatePaid, onViewInvoice }) => {
                                 <th className="p-6">Vencimiento/Pago</th>
                                 <th className="p-6">Estado</th>
                                 <th className="p-6">Fecha</th>
+                                <th className="p-6 text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody className="text-sm font-medium">
@@ -82,15 +85,43 @@ const OrdersTab = ({ orders, onUpdateStatus, onUpdatePaid, onViewInvoice }) => {
                                         )}
                                     </td>
                                     <td className="p-6">
-                                        <span className={`px-3 py-1 uppercase text-[10px] font-black rounded-full ${order.status === 'Delivered' ? 'bg-green-100 text-green-600' :
+                                        <span className={`px-3 py-1 uppercase text-[10px] font-black rounded-full ${order.status === 'Delivered' || order.status === 'Shipped' ? 'bg-green-100 text-green-600' :
                                             order.status === 'Processing' ? 'bg-blue-100 text-blue-600' :
                                                 'bg-yellow-100 text-yellow-600'
                                             }`}>
                                             {order.status === 'Processing' ? 'En Preparación' :
-                                                order.status === 'Delivered' ? 'Entregado' : 'Pendiente'}
+                                                order.status === 'Delivered' ? 'Entregado' :
+                                                    order.status === 'Shipped' ? 'Enviado' : 'Pendiente'}
                                         </span>
+                                        {order.trackingNumber && (
+                                            <div className="text-[10px] text-gray-400 font-bold mt-1 flex items-center gap-1">
+                                                <Truck className="w-3 h-3" /> {order.trackingNumber}
+                                            </div>
+                                        )}
                                     </td>
                                     <td className="p-6 text-gray-400 text-xs font-bold">{new Date(order.createdAt).toLocaleDateString()}</td>
+                                    <td className="p-6">
+                                        <div className="flex gap-2 justify-center">
+                                            <button
+                                                onClick={() => onAddTracking(order)}
+                                                className="bg-blue-50 text-blue-500 p-2 rounded-xl hover:bg-blue-100 transition-colors"
+                                                title="Enviar Guía"
+                                            >
+                                                <Truck className="w-4 h-4" />
+                                            </button>
+                                            {order.shippingAddress?.phone && (
+                                                <a
+                                                    href={`https://wa.me/57${order.shippingAddress.phone.replace(/\D/g, '')}?text=Hola ${order.shippingAddress.fullName || 'Cliente'}, tu pedido #${order._id} está siendo procesado!`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="bg-green-50 text-green-500 p-2 rounded-xl hover:bg-green-100 transition-colors"
+                                                    title="Contactar WhatsApp"
+                                                >
+                                                    <MessageCircle className="w-4 h-4" />
+                                                </a>
+                                            )}
+                                        </div>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

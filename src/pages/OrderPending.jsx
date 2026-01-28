@@ -21,19 +21,22 @@ const OrderPending = () => {
                 if (transactionId) {
                     console.log("Verifying Wompi Transaction:", transactionId);
                     const res = await api.get(`/payments/verify/${transactionId}`);
-                    // Response: { status: 'APPROVED' | 'DECLINED' | 'ERROR', orderId: ..., isPaid: ... }
 
-                    if (res.data.status === 'APPROVED' || res.data.isPaid) {
+                    if (res.data.status === 'APPROVED') {
                         window.location.href = `/order/${id}/success`;
+                        return;
                     } else if (res.data.status === 'DECLINED' || res.data.status === 'ERROR' || res.data.status === 'VOIDED') {
                         window.location.href = `/order/${id}/failure`;
+                        return;
                     }
-                } else {
-                    // Fallback: check order status directly just in case webhook worked
-                    const res = await api.get(`/orders/${id}`);
-                    if (res.data.isPaid) {
-                        window.location.href = `/order/${id}/success`;
-                    }
+                }
+
+                // Check order status directly (covers webhook updates or direct updates)
+                const res = await api.get(`/orders/${id}`);
+                if (res.data.isPaid) {
+                    window.location.href = `/order/${id}/success`;
+                } else if (res.data.status === 'Cancelled' || res.data.status === 'Failed') {
+                    window.location.href = `/order/${id}/failure`;
                 }
 
             } catch (err) {

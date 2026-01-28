@@ -17,6 +17,7 @@ import AnalyticsModal from '../components/admin/AnalyticsModal';
 import UserOrdersModal from '../components/admin/UserOrdersModal';
 import ProductModal from '../components/admin/ProductModal';
 import InvoiceModal from '../components/admin/InvoiceModal';
+import TrackingModal from '../components/admin/TrackingModal';
 
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
@@ -76,6 +77,8 @@ const AdminDashboard = () => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
     const [selectedUserForOrders, setSelectedUserForOrders] = useState(null);
+    const [isTrackingOpen, setIsTrackingOpen] = useState(false);
+    const [selectedOrderForTracking, setSelectedOrderForTracking] = useState(null);
 
     // Advanced Analytics State
     const [dateRange, setDateRange] = useState({
@@ -325,6 +328,17 @@ const AdminDashboard = () => {
         } catch (err) { alert('Error al marcar pagado'); }
     };
 
+    const handleUpdateTracking = async (orderId, trackingNumber) => {
+        try {
+            await api.put(`/orders/${orderId}/tracking`, { trackingNumber });
+            fetchData();
+            alert("Tracking enviado correctamente 🚚");
+        } catch (err) {
+            console.error(err);
+            alert("Error enviando tracking");
+        }
+    };
+
     // Helpers for Charts
     const getChartData = () => {
         const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -450,14 +464,13 @@ const AdminDashboard = () => {
                                 handleCancelEdit={handleCancelEdit}
                             />
                         )}
-                        {activeTab === 'orders' && (
-                            <OrdersTab
-                                orders={orders}
-                                onUpdateStatus={handleUpdateOrderStatus}
-                                onUpdatePaid={handleUpdateOrderPaid}
-                                onViewInvoice={(order) => { setSelectedOrder(order); setIsInvoiceOpen(true); }}
-                            />
-                        )}
+                        <OrdersTab
+                            orders={orders}
+                            onUpdateStatus={handleUpdateOrderStatus}
+                            onUpdatePaid={handleUpdateOrderPaid}
+                            onViewInvoice={(order) => { setSelectedOrder(order); setIsInvoiceOpen(true); }}
+                            onAddTracking={(order) => { setSelectedOrderForTracking(order); setIsTrackingOpen(true); }}
+                        />
                     </motion.div>
                 </AnimatePresence>
 
@@ -483,6 +496,17 @@ const AdminDashboard = () => {
                         <InvoiceModal
                             selectedOrder={selectedOrder}
                             onClose={() => setIsInvoiceOpen(false)}
+                        />
+                    )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                    {isTrackingOpen && selectedOrderForTracking && (
+                        <TrackingModal
+                            isOpen={isTrackingOpen}
+                            onClose={() => setIsTrackingOpen(false)}
+                            order={selectedOrderForTracking}
+                            onSubmit={handleUpdateTracking}
                         />
                     )}
                 </AnimatePresence>

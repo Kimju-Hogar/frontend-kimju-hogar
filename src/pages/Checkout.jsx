@@ -9,7 +9,7 @@ import colombiaData from '../utils/colombia.json';
 import { CreditCard, Truck, ShieldCheck, Heart, MapPin, Check } from 'lucide-react';
 
 const Checkout = () => {
-    const { cart, getCartTotal } = useCart();
+    const { cart, getCartTotal, clearCart } = useCart();
     const { user } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
@@ -54,27 +54,39 @@ const Checkout = () => {
     };
 
     // Manejo de respuesta de Wompi (Callback)
-    const handleWompiResponse = useCallback((result) => {
+    const handleWompiResponse = useCallback(async (result) => {
         console.log('Wompi response:', result);
-        const transaction = result.transaction;
+        const transaction = result?.transaction;
 
         if (!transaction) {
-            console.log('No transaction returned from widget (closed?)');
+            console.log('No transaction returned from widget (closed or error)');
             return;
         }
 
-        // Wompi a veces devuelve la estructura un poco diferente dependiendo del entorno
-        // Aseguramos obtener status y referencia
-        const status = transaction?.status;
-        const reference = transaction?.reference;
+        const status = transaction.status;
+        const reference = transaction.reference; // Assuming this is orderId
 
         if (status === 'APPROVED') {
-            navigate(`/order/${reference}/success`);
-        } else {
-            // DECLINED, ERROR, VOIDED
+            try {
+                // Verify and Update on Backend
+                await api.put('/orders/pay-wompi', {
+                    transactionId: transaction.id,
+                    reference: reference, // Send reference (OrderId)
+                    transactionData: transaction
+                });
+
+                clearCart();
+                navigate(`/order/${reference}/success`);
+            } catch (error) {
+                console.error("Error updating order status:", error);
+                // Even if update fails, if it was approved, maybe redirect to success but show warning?
+                // For now, redirect to success, user can see status there.
+                navigate(`/order/${reference}/success`);
+            }
+        } else if (status === 'DECLINED' || status === 'ERROR') {
             navigate(`/order/${reference}/failed`);
         }
-    }, [navigate]);
+    }, [navigate, clearCart]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -118,7 +130,6 @@ const Checkout = () => {
             });
 
             checkout.open((result) => {
-                // Callback de apertura (opcional)
                 console.log("Widget abierto", result);
             });
 

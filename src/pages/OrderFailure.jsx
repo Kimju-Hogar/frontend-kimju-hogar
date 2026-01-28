@@ -12,22 +12,14 @@ const OrderFailure = () => {
     useEffect(() => {
         const checkStatus = async () => {
             try {
-                const mainUrl = window.location.href;
-                const urlObj = new URL(mainUrl);
-                const paymentId = urlObj.searchParams.get("payment_id");
-
                 if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) return;
 
-                // Always check status against backend, even if no payment_id in URL
-                // This handles cases where user navigates manually or parameters are lost
-                const res = await api.post('/payments/verify_payment', {
-                    orderId: id,
-                    paymentId: paymentId // might be null, that's okay
-                });
+                const res = await api.get(`/orders/${id}`);
 
-                if (res.data.status === 'approved') {
+                if (res.data.isPaid) {
                     window.location.href = `/order/${id}/success`;
                 }
+                // If not paid, stay on failure page.
             } catch (err) {
                 console.error("Verification failed in failure page", err);
             }

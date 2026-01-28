@@ -11,36 +11,31 @@ const OrderSuccess = () => {
     const [status, setStatus] = useState('loading'); // loading, approved, error
 
     useEffect(() => {
-        const verifyOrder = async () => {
+        const checkOrderStatus = async () => {
             try {
-                // Wompi redirects to /order/:transactionId/success
-                // The :id in the route is actually the TRANSACTION ID, not the Order ID anymore
-                const transactionId = id;
+                if (!id) return;
 
-                if (!transactionId) {
-                    setStatus('error');
-                    return;
-                }
+                // 1. Fetch Order Details directly
+                const { data: order } = await api.get(`/orders/${id}`);
 
-                // Verify with backend
-                const res = await api.get(`/payments/verify/${transactionId}`);
-
-                if (res.data.status === 'APPROVED') {
+                if (order.isPaid) {
                     setStatus('approved');
                     clearCart();
-                } else if (res.data.status === 'DECLINED' || res.data.status === 'ERROR') {
-                    window.location.href = `/order/${res.data.orderId}/failed`;
+                } else if (order.status === 'Cancelled' || order.status === 'Failed') {
+                    window.location.href = `/order/${id}/failed`;
                 } else {
-                    // Pending or Voided
-                    setStatus('pending'); // You might want a pending page logic here
+                    // It might be delayed (processing)
+                    // If we just came from Checkout and it said Approved, it should be paid.
+                    // If it's pending, show pending state.
+                    setStatus('pending');
                 }
             } catch (err) {
-                console.error("Error verifying Wompi transaction", err);
+                console.error("Error fetching order status", err);
                 setStatus('error');
             }
         };
 
-        verifyOrder();
+        checkOrderStatus();
     }, [id]);
 
     if (status === 'loading') {
