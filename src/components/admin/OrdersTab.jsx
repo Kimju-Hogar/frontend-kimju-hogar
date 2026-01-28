@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Search, Filter, AlertTriangle, CheckCircle, Truck, MessageCircle } from 'lucide-react';
-import { sendEmail } from '../../config/api'; // Or just use href for wa
+
 
 const OrdersTab = ({ orders, onUpdateStatus, onUpdatePaid, onViewInvoice, onAddTracking }) => {
     const [searchTerm, setSearchTerm] = useState('');
