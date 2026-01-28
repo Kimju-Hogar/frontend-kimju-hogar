@@ -7,12 +7,13 @@ import logo from '../../assets/kimju-hogar-logo.jpg';
 
 const Footer = () => {
     const [email, setEmail] = useState('');
+    const [website, setWebsite] = useState(''); // Honeypot
     const [msg, setMsg] = useState('');
 
     const handleSubscribe = async (e) => {
         e.preventDefault();
         try {
-            const res = await api.post('/newsletter', { email });
+            const res = await api.post('/newsletter', { email, website });
             setMsg(res.data.msg);
             setEmail('');
             setTimeout(() => setMsg(''), 5000);
@@ -58,6 +59,15 @@ const Footer = () => {
                         <div className="pt-4">
                             <p className="text-xs font-bold uppercase text-pink-200 mb-2">Suscríbete al Club</p>
                             <form onSubmit={handleSubscribe} className="flex gap-2 relative">
+                                <input
+                                    type="text"
+                                    name="website"
+                                    value={website}
+                                    onChange={(e) => setWebsite(e.target.value)}
+                                    style={{ display: 'none' }}
+                                    tabIndex="-1"
+                                    autoComplete="off"
+                                />
                                 <input
                                     type="email"
                                     placeholder="email@ejemplo.com"

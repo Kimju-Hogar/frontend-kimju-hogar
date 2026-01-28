@@ -7,7 +7,7 @@ import PageTransition from '../components/layout/PageTransition';
 const Contact = () => {
     const [status, setStatus] = useState('');
     const [msg, setMsg] = useState('');
-    const [formData, setFormData] = useState({ name: '', lastName: '', email: '', message: '' });
+    const [formData, setFormData] = useState({ name: '', lastName: '', email: '', message: '', website: '' }); // website is honeypot
 
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -18,7 +18,8 @@ const Contact = () => {
             await api.post('/contact', {
                 name: `${formData.name} ${formData.lastName}`,
                 email: formData.email,
-                message: formData.message
+                message: formData.message,
+                website: formData.website // Honeypot
             });
             setStatus('sent');
             setMsg('¡Mensaje enviado con éxito! 💖');
@@ -77,6 +78,16 @@ const Contact = () => {
                         >
                             <h2 className="text-3xl font-display font-bold text-secondary mb-8">Envíanos un mensaje</h2>
                             <form onSubmit={handleSubmit} className="space-y-6">
+                                {/* Honeypot - Bots will fill this */}
+                                <input
+                                    type="text"
+                                    name="website"
+                                    value={formData.website}
+                                    onChange={handleChange}
+                                    style={{ display: 'none' }}
+                                    tabIndex="-1"
+                                    autoComplete="off"
+                                />
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold uppercase text-gray-400 ml-4">Nombre</label>
