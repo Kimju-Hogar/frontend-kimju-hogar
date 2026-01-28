@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'; // 👈 Agregado useCallback
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../config/api';
 import { useCart } from '../context/CartContext';
@@ -6,10 +6,10 @@ import { useAuth } from '../context/AuthContext';
 import PageTransition from '../components/layout/PageTransition';
 import AutocompleteField from '../components/common/AutocompleteField';
 import colombiaData from '../utils/colombia.json';
-import { CreditCard, Truck, ShieldCheck, Heart, ShoppingBag, MapPin, Check, ExternalLink } from 'lucide-react';
+import { CreditCard, Truck, ShieldCheck, Heart, MapPin, Check } from 'lucide-react';
 
 const Checkout = () => {
-    const { cart, getCartTotal, clearCart } = useCart();
+    const { cart, getCartTotal } = useCart();
     const { user } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
@@ -17,6 +17,7 @@ const Checkout = () => {
     const [formData, setFormData] = useState({
         fullName: user?.name || '',
         email: user?.email || '',
+        legalId: '',
         address: '',
         city: '',
         state: '',
@@ -52,83 +53,78 @@ const Checkout = () => {
         setSelectedAddressIndex(null);
     };
 
+    // Manejo de respuesta de Wompi (Callback)
+    const handleWompiResponse = useCallback((result) => {
+        console.log('Wompi response:', result);
+        const transaction = result.transaction;
+
+        if (!transaction) {
+            console.log('No transaction returned from widget (closed?)');
+            return;
+        }
+
+        // Wompi a veces devuelve la estructura un poco diferente dependiendo del entorno
+        // Aseguramos obtener status y referencia
+        const status = transaction?.status;
+        const reference = transaction?.reference;
+
+        if (status === 'APPROVED') {
+            navigate(`/order/${reference}/success`);
+        } else {
+            // DECLINED, ERROR, VOIDED
+            navigate(`/order/${reference}/failed`);
+        }
+    }, [navigate]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            // 1. Create Order in Backend (Pending status)
+            // 1. Crear Orden en Backend
             const orderData = {
                 orderItems: cart.map(item => ({
                     product: item._id,
                     name: item.name,
                     quantity: item.quantity,
-                    price: item.price * (1 - (item.discount || 0) / 100),
+                    price: item.price,
                     image: item.image
                 })),
-                shippingAddress: {
-                    address: formData.address,
-                    city: formData.city,
-                    state: formData.state,
-                    postalCode: '0000',
-                    country: 'Colombia',
-                    additionalInfo: formData.additionalInfo
-                },
-                paymentMethod: 'Wompi',
+                shippingAddress: { ...formData, country: 'Colombia' },
+                paymentMethod: 'WOMPI',
                 itemsPrice: getCartTotal(),
                 taxPrice: 0,
                 shippingPrice: 0,
                 totalPrice: getCartTotal()
             };
 
-            const { data: createdOrder } = await api.post('/orders', orderData);
-            const orderId = createdOrder._id;
+            const { data: order } = await api.post('/orders', orderData);
 
-            // 2. Get Signature for Wompi
+            // 2. Obtener Firma de Integridad
             const { data: signatureData } = await api.post('/payments/signature', {
-                orderId: orderId,
+                orderId: order._id,
                 amount: getCartTotal()
             });
 
-            // 3. Open Wompi Widget
-            const checkoutOptions = {
+            // 3. Inicializar Widget
+            const checkout = new window.WidgetCheckout({
                 currency: 'COP',
                 amountInCents: signatureData.amountInCents,
                 reference: signatureData.reference,
                 publicKey: signatureData.publicKey,
-                signature: { integrity: signatureData.signature },
-                redirectUrl: `${window.location.origin}/order/${orderId}/pending`, // Redirect to verification page
-                customerData: {
-                    email: formData.email,
-                    fullName: formData.fullName,
-                    phoneNumber: formData.phone,
-                    phoneNumberPrefix: '+57',
-                    legalId: '', // Optional
-                    legalIdType: 'CC' // Optional
-                },
-                shippingAddress: {
-                    addressLine1: formData.address,
-                    city: formData.city,
-                    phoneNumber: formData.phone,
-                    region: formData.state,
-                    country: 'CO'
-                }
-            };
-
-            const checkout = new window.WidgetCheckout(checkoutOptions);
+                signature: { integrity: signatureData.signature }, // Correct structure for Wompi Widget
+                redirectUrl: null, // Dejar null si usamos onResponse para evitar conflictos
+                onResponse: handleWompiResponse // Usamos tu lógica de callback
+            });
 
             checkout.open((result) => {
-                const transactionId = result.transaction.id;
-                console.log("Transaction ID:", transactionId);
-                // The widget might redirect automatically, but if simply closed or handled inline:
-                if (result.status === 'APPROVED') {
-                    navigate(`/order/${orderId}/success`);
-                }
+                // Callback de apertura (opcional)
+                console.log("Widget abierto", result);
             });
 
         } catch (error) {
-            console.error('Checkout error:', error);
-            alert('Hubo un error al iniciar el pago. Por favor intenta de nuevo.');
+            console.error(error);
+            alert('Error iniciando el pago');
         } finally {
             setLoading(false);
         }
@@ -218,6 +214,18 @@ const Checkout = () => {
                                 />
                             </div>
                             <div className="space-y-1">
+                                <label className="block text-xs font-bold text-gray-400 uppercase ml-3">DNI / Cédula / NIT</label>
+                                <input
+                                    type="text"
+                                    name="legalId"
+                                    value={formData.legalId}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-50 border border-gray-200 p-4 rounded-2xl font-bold text-gray-600 outline-none focus:bg-white focus:border-primary transition-all placeholder:text-gray-300 shadow-sm"
+                                    placeholder="Cédula de ciudadanía o NIT"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-1">
                                 <label className="block text-xs font-bold text-gray-400 uppercase ml-3">Dirección de Entrega</label>
                                 <input
                                     type="text"
@@ -245,8 +253,9 @@ const Checkout = () => {
                                     label="Departamento"
                                     placeholder="Selecciona departamento..."
                                     value={formData.state}
-                                    onChange={(val) => setFormData({ ...formData, state: val, city: '' })} // Reset city when dept changes
+                                    onChange={(val) => setFormData({ ...formData, state: val, city: '' })}
                                     options={colombiaData.map(d => d.departamento)}
+                                    required
                                 />
                                 <AutocompleteField
                                     label="Ciudad / Municipio"
@@ -256,8 +265,9 @@ const Checkout = () => {
                                     options={
                                         formData.state
                                             ? (colombiaData.find(d => d.departamento === formData.state)?.ciudades || [])
-                                            : colombiaData.flatMap(d => d.ciudades) // Show all if no dept
+                                            : colombiaData.flatMap(d => d.ciudades)
                                     }
+                                    required
                                 />
                             </div>
                             <div className="space-y-1">

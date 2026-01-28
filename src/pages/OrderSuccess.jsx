@@ -13,41 +13,30 @@ const OrderSuccess = () => {
     useEffect(() => {
         const verifyOrder = async () => {
             try {
-                // Get params from URL (Mercado Pago redirects with them)
-                const mainUrl = window.location.href;
-                const urlObj = new URL(mainUrl);
-                const paymentId = urlObj.searchParams.get("payment_id");
+                // Wompi redirects to /order/:transactionId/success
+                // The :id in the route is actually the TRANSACTION ID, not the Order ID anymore
+                const transactionId = id;
 
-                // Validate ID format before calling backend
-                if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
-                    // Invalid ID, don't verify
+                if (!transactionId) {
                     setStatus('error');
                     return;
                 }
 
-                // Only verify if we haven't already
-                // Call backend to sync
-                const res = await api.post('/payments/verify_payment', {
-                    orderId: id,
-                    paymentId: paymentId
-                });
+                // Verify with backend
+                const res = await api.get(`/payments/verify/${transactionId}`);
 
-                if (res.data.status === 'approved') {
+                if (res.data.status === 'APPROVED') {
                     setStatus('approved');
                     clearCart();
-                } else if (res.data.status === 'pending') {
-                    window.location.href = `/order/${id}/pending`;
+                } else if (res.data.status === 'DECLINED' || res.data.status === 'ERROR') {
+                    window.location.href = `/order/${res.data.orderId}/failed`;
                 } else {
-                    window.location.href = `/order/${id}/failure`;
+                    // Pending or Voided
+                    setStatus('pending'); // You might want a pending page logic here
                 }
             } catch (err) {
-                console.error("Error confirming order", err);
-                // If checking fails, likely network or 500. Secure default is NOT to show success.
-                // Redirect to failure or show checking error.
-                // However, infinite redirect loops are annoying.
-                // Let's fallback to checking database status via verify_payment output if possible, 
-                // but if that failed, we assume failure.
-                window.location.href = `/order/${id}/failure`;
+                console.error("Error verifying Wompi transaction", err);
+                setStatus('error');
             }
         };
 

@@ -8,7 +8,8 @@ const AutocompleteField = ({
     options,
     placeholder,
     icon: Icon = MapPin,
-    disabled = false
+    disabled = false,
+    required = false
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState(value || '');
@@ -58,6 +59,7 @@ const AutocompleteField = ({
                     onFocus={() => setIsOpen(true)}
                     placeholder={placeholder}
                     disabled={disabled}
+                    required={required}
                     className="w-full bg-gray-50 border border-gray-200 pl-11 pr-10 py-4 rounded-2xl font-bold text-gray-600 outline-none focus:bg-white focus:border-primary transition-all placeholder:text-gray-300 shadow-sm disabled:opacity-50"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none">
