@@ -464,13 +464,15 @@ const AdminDashboard = () => {
                                 handleCancelEdit={handleCancelEdit}
                             />
                         )}
-                        <OrdersTab
-                            orders={orders}
-                            onUpdateStatus={handleUpdateOrderStatus}
-                            onUpdatePaid={handleUpdateOrderPaid}
-                            onViewInvoice={(order) => { setSelectedOrder(order); setIsInvoiceOpen(true); }}
-                            onAddTracking={(order) => { setSelectedOrderForTracking(order); setIsTrackingOpen(true); }}
-                        />
+                        {activeTab === 'orders' && (
+                            <OrdersTab
+                                orders={orders}
+                                onUpdateStatus={handleUpdateOrderStatus}
+                                onUpdatePaid={handleUpdateOrderPaid}
+                                onViewInvoice={(order) => { setSelectedOrder(order); setIsInvoiceOpen(true); }}
+                                onAddTracking={(order) => { setSelectedOrderForTracking(order); setIsTrackingOpen(true); }}
+                            />
+                        )}
                     </motion.div>
                 </AnimatePresence>
 

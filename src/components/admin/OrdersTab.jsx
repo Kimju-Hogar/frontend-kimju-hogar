@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Filter, AlertTriangle, CheckCircle, Truck, MessageCircle } from 'lucide-react';
+import { Search, Filter, AlertTriangle, CheckCircle, Truck, MessageCircle, Eye } from 'lucide-react';
 
 
 const OrdersTab = ({ orders, onUpdateStatus, onUpdatePaid, onViewInvoice, onAddTracking }) => {
@@ -102,6 +102,13 @@ const OrdersTab = ({ orders, onUpdateStatus, onUpdatePaid, onViewInvoice, onAddT
                                     <td className="p-6 text-gray-400 text-xs font-bold">{new Date(order.createdAt).toLocaleDateString()}</td>
                                     <td className="p-6">
                                         <div className="flex gap-2 justify-center">
+                                            <button
+                                                onClick={() => onViewInvoice(order)}
+                                                className="bg-purple-50 text-purple-500 p-2 rounded-xl hover:bg-purple-100 transition-colors"
+                                                title="Ver Detalles / Factura"
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                            </button>
                                             <button
                                                 onClick={() => onAddTracking(order)}
                                                 className="bg-blue-50 text-blue-500 p-2 rounded-xl hover:bg-blue-100 transition-colors"

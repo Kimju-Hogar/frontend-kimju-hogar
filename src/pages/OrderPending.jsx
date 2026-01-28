@@ -33,10 +33,30 @@ const OrderPending = () => {
 
                 // Check order status directly (covers webhook updates or direct updates)
                 const res = await api.get(`/orders/${id}`);
-                if (res.data.isPaid) {
+                const order = res.data;
+
+                if (order.isPaid) {
                     window.location.href = `/order/${id}/success`;
-                } else if (res.data.status === 'Cancelled' || res.data.status === 'Failed') {
+                    return;
+                } else if (order.status === 'Cancelled' || order.status === 'Failed') {
                     window.location.href = `/order/${id}/failure`;
+                    return;
+                }
+
+                // Check Timeout (3 minutes = 180,000 ms)
+                const createdAt = new Date(order.createdAt).getTime();
+                const now = Date.now();
+                const timeoutDuration = 3 * 60 * 1000; // 3 minutes
+
+                if (now - createdAt > timeoutDuration) {
+                    console.warn("Order pending timeout exceeded. Redirecting to failure.");
+                    // Optional: Call backend to explicitly cancel if needed, 
+                    // but for now redirecting to failure page is the requested UX.
+                    // Ideally we should call an endpoint to set status to Cancelled/Failed 
+                    // to release stock if reserved, but Wompi usually handles expiration too.
+                    // Let's just redirect for now as requested.
+                    window.location.href = `/order/${id}/failure`;
+                    return;
                 }
 
             } catch (err) {

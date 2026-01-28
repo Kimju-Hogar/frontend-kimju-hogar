@@ -79,12 +79,14 @@ const Checkout = () => {
                 navigate(`/order/${reference}/success`);
             } catch (error) {
                 console.error("Error updating order status:", error);
-                // Even if update fails, if it was approved, maybe redirect to success but show warning?
-                // For now, redirect to success, user can see status there.
                 navigate(`/order/${reference}/success`);
             }
-        } else if (status === 'DECLINED' || status === 'ERROR') {
-            navigate(`/order/${reference}/failed`);
+        } else if (status === 'DECLINED' || status === 'ERROR' || status === 'VOIDED') {
+            // If voided/cancelled, we don't clear cart, but we do show failure page
+            navigate(`/order/${reference}/failure`);
+        } else {
+            // Pending or unknown
+            navigate(`/order/${reference}/pending`);
         }
     }, [navigate, clearCart]);
 
